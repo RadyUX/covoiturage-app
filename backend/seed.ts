@@ -58,7 +58,7 @@ await connection.execute("SET FOREIGN_KEY_CHECKS = 1");
     );
   }
 
-  for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 5; i++) {
     await connection.execute(
       `INSERT INTO voiture (voiture_id, modele, immatriculation, energie, couleur, premiere_immatriculation_date, user_id, marque_id)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,

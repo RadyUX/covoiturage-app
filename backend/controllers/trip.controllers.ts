@@ -1,3 +1,4 @@
+import { TripDetails } from "../models/trip.model";
 import { tripService } from "../services/trip.service";
 import { Request, Response } from "express";
 
@@ -42,4 +43,21 @@ return res.status(200).json({ trips });
   }
 };
 
+
+getTripDetails = async(req: Request, res: Response) =>{
+  try{
+    const tripId = Number(req.params.id);
+    if(!tripId){
+      return res.status(400).json({error: "id invalide"});
+
+    }
+    const tripDetails: TripDetails | null = await this.tripservice.getTripDetails(tripId);
+    if(!tripDetails) return res.status(404).json({error: "trajet non trouvé"});
+
+    return res.status(200).json({tripDetails})
+  }catch(error){
+  console.error("err dans getTripDetails",error)
+  res.status(500).json({error:"erreur serveur"})
+}
+}
 }

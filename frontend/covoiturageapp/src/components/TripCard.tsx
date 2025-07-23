@@ -1,10 +1,12 @@
-import star from "../assets/star.svg";
+import { FaStar } from "react-icons/fa";
+
 import type { Trip } from "../hooks/useTrips";
 
 interface Props {
   trip: Trip;
+  onClickDetail: () => void;
 }
-export default function TripCard({ trip }: Props) {
+export default function TripCard({ trip, onClickDetail }: Props) {
   function renderStars(note: number) {
     const fullStars = Math.floor(Number(note));
     const emptyStars = 5 - fullStars;
@@ -12,24 +14,10 @@ export default function TripCard({ trip }: Props) {
     return (
       <div className="flex gap-1">
         {[...Array(fullStars)].map((_, i) => (
-          <img
-            key={`full-${i}`}
-            src={star}
-            alt="étoile remplie"
-            className="w-5 h-5 rounded bg-yellow-400 p-[2px]"
-            width={15}
-            height={15}
-          />
+          <FaStar key={`full-${i}`} color="gold" size={20} />
         ))}
         {[...Array(emptyStars)].map((_, i) => (
-          <img
-            key={`empty-${i}`}
-            src={star}
-            alt="étoile vide"
-            className="w-5 h-5 opacity-30"
-            width={15}
-            height={15}
-          />
+          <FaStar key={`empty-${i}`} color="#ccc" size={20} />
         ))}
       </div>
     );
@@ -89,7 +77,10 @@ export default function TripCard({ trip }: Props) {
             : "Voiture non électrique"}
         </p>
         <p>{trip.nb_place} place restante</p>
-        <button className="bg-[#2E7D32]  text-[#F5F5F5] px-[15px] py-[6px]">
+        <button
+          className="bg-[#2E7D32]  text-[#F5F5F5] px-[15px] py-[6px]"
+          onClick={onClickDetail}
+        >
           Détail
         </button>
       </div>

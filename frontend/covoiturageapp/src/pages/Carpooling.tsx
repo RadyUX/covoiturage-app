@@ -1,6 +1,6 @@
-import { FaFilter } from "react-icons/fa";
+import { FaFilter, FaStar } from "react-icons/fa";
 import TripSearchForm from "../components/TripSearchForm";
-import star from "../assets/star.svg";
+
 import { useTrips } from "../hooks/useTrips";
 import CarpoolingList from "../components/CarpoolingList";
 import { useState } from "react";
@@ -57,17 +57,12 @@ export default function Carpooling() {
             <span className="text-sm">note min</span>
             {/* Note min */}
             {[...Array(5)].map((_, i) => (
-              <img
+              <FaStar
                 key={i}
-                src={star}
-                alt="star"
-                className="cursor-pointer"
-                width={20}
-                height={20}
+                color={(filters.note_min ?? 0) > i ? "yellow" : "gray"}
+                size={20}
+                style={{ cursor: "pointer" }}
                 onClick={() => setFilters({ ...filters, note_min: i + 1 })}
-                style={{
-                  backgroundColor: filters.note_min > i ? "yellow" : "gray",
-                }}
               />
             ))}
           </div>

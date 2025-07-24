@@ -3,10 +3,18 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { db } from './config/db';
 import tripRoutes from "./routes/trips.routes"
-// Charger les variables d’environnement
+import userRoutes from "./routes/user.routes"
+import mongoose from "mongoose"
+
+
 dotenv.config();
-
-
+const mongoUri = process.env.MONGO_URI;
+if (!mongoUri) {
+  throw new Error("MONGO_URI n'est pas défini dans le .env");
+}
+mongoose.connect(mongoUri)
+  .then(() => console.log("MongoDB connecté !"))
+  .catch((err) => console.error("Erreur MongoDB :", err));
 // Créer l’app Express
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -14,12 +22,13 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(cors());
 app.use(express.json());
-
+console.log(userRoutes);
 // Exemple de route pour test
 app.get('/', (req, res) => {
   res.send('🚗 Bienvenue sur covoiturageapp API !');
 });
 app.use("/api/trips", tripRoutes )
+app.use("/api/users", userRoutes)
 
 // Lancer le serveur
 app.listen(PORT, () => {

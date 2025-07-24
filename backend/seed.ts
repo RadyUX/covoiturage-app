@@ -1,5 +1,5 @@
 import * as mysql from 'mysql2/promise';
-
+import bcrypt from 'bcrypt'
 
 async function main() {
 
@@ -40,23 +40,25 @@ await connection.execute("SET FOREIGN_KEY_CHECKS = 1");
   }
 
   for (let i = 1; i <= 5; i++) {
-    await connection.execute(
-      `INSERT INTO utilisateur (user_id, lastname, firstname, email, password, telephone, adress, birthdate, photo, pseudo)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        i,
-        noms[Math.floor(Math.random() * noms.length)],
-        prenoms[Math.floor(Math.random() * prenoms.length)],
-        `user${i}@test.com`,
-        'password123',
-        `060000000${i}`,
-        `${Math.floor(Math.random() * 100)} rue ${villes[i % villes.length]}`,
-        '2000-01-01',
-        'photo.png',
-        `pseudo${i}`,
-      ]
-    );
-  }
+  const hashedPassword = await bcrypt.hash('password123', 10); // Hash le mot de passe
+
+  await connection.execute(
+    `INSERT INTO utilisateur (user_id, lastname, firstname, email, password, telephone, adress, birthdate, photo, pseudo)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      i,
+      noms[Math.floor(Math.random() * noms.length)],
+      prenoms[Math.floor(Math.random() * prenoms.length)],
+      `user${i}@test.com`,
+      hashedPassword, // Utilise le mot de passe hashé
+      `060000000${i}`,
+      `${Math.floor(Math.random() * 100)} rue ${villes[i % villes.length]}`,
+      '2000-01-01',
+      'photo.png',
+      `pseudo${i}`,
+    ]
+  );
+}
 
     for (let i = 1; i <= 5; i++) {
     await connection.execute(
@@ -105,10 +107,29 @@ await connection.execute("SET FOREIGN_KEY_CHECKS = 1");
       [i, i]
     );
   }
+// Ajout des rôles
+const roles = ["passager", "chauffeur", "admin", "employé"];
+for (let i = 1; i <= roles.length; i++) {
+  await connection.execute(
+    'INSERT IGNORE INTO role (role_id, role_nom) VALUES (?, ?)',
+    [i, roles[i - 1]]
+  );
+}
 
-  for (let i = 1; i <= 5; i++) {
-   await connection.execute(
-  `INSERT INTO avis (avis_id, commentaire, note, status, auteur_id, cible_id)
+// ... création des utilisateurs ...
+
+// Association utilisateur <-> rôle
+for (let i = 1; i <= 5; i++) {
+  const roleId = ((i - 1) % roles.length) + 1;
+  await connection.execute(
+    'INSERT IGNORE INTO possede (user_id, role_id) VALUES (?, ?)',
+    [i, roleId]
+  );
+}
+
+for (let i = 1; i <= 5; i++) {
+  await connection.execute(
+    `INSERT INTO avis (avis_id, commentaire, note, status, auteur_id, cible_id)
    VALUES (?, ?, ?, ?, ?, ?)`,
   [
     i,
@@ -120,8 +141,11 @@ await connection.execute("SET FOREIGN_KEY_CHECKS = 1");
   ]
 );
 
+
+
   }
 
+  
   console.log('✅ Données insérées avec succès.');
   await connection.end();
 }

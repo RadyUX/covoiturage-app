@@ -82,23 +82,23 @@ await connection.execute("SET FOREIGN_KEY_CHECKS = 1");
     date_depart.setDate(date_depart.getDate() + i);
     const arrive = new Date(date_depart);
     arrive.setHours(arrive.getHours() + 2);
-
-    await connection.execute(
-      `INSERT INTO covoiturage (covoiturage_id, date_depart, heure_depart, lieu_depart, arrive_date, arrive_heure, status, nb_place, prix, voiture_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        i,
-        date_depart.toISOString().split('T')[0],
-        '08:00:00',
-        villes[i % villes.length],
-        arrive.toISOString().split('T')[0],
-        '10:00:00',
-        'disponible',
-        3,
-        15 + i,
-        i,
-      ]
-    );
+await connection.execute(
+  `INSERT INTO covoiturage (covoiturage_id, date_depart, heure_depart, lieu_depart, arrive_date, arrive_heure, lieu_arrivee, status, nb_place, prix, voiture_id)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  [
+    i,
+    date_depart.toISOString().split('T')[0],
+    '08:00:00',
+    villes[i % villes.length], // lieu_depart
+    arrive.toISOString().split('T')[0],
+    '10:00:00',
+    villes[(i + 1) % villes.length], // lieu_arrivee (ville suivante dans la liste)
+    'disponible',
+    3,
+    15 + i,
+    i,
+  ]
+);
   }
 
   for (let i = 1; i <= 5; i++) {

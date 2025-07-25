@@ -4,7 +4,7 @@ import { UserRepository } from "../repositories/user.repository"
 import bcrypt from "bcrypt"
 import { db } from "../config/db"
 
-
+type SafeUser = Omit<User, "password">;
 export class UserService{
  private userRepository: UserRepository;
 
@@ -27,7 +27,7 @@ export class UserService{
     return newUser;
 }
 
-    async login(email: string, password: string): Promise<{ token: string; user: User }> {
+    async login(email: string, password: string): Promise<{ token: string; user: SafeUser }> {
     console.log("Tentative de connexion avec :", { email, password });
 
     const existingUser = await this.userRepository.findByEmail(email);
@@ -36,8 +36,7 @@ export class UserService{
         throw new Error("Utilisateur non trouvé");
     }
 
-  console.log("Mot de passe en clair :", password);
-console.log("Mot de passe hashé :", existingUser.password);
+
 
 const isPasswordValid = await bcrypt.compare(password, existingUser.password);
 console.log("Résultat de bcrypt.compare :", isPasswordValid);
@@ -56,7 +55,21 @@ if (!isPasswordValid) {
     const token = jwt.sign({ userId: existingUser.id }, jwt_secret, { expiresIn: "24h" });
     console.log("Connexion réussie pour :", email);
 
-    return { token, user: existingUser };
+
+   const { password: _, ...rest } = existingUser;
+const safeUser: SafeUser = {
+  id: rest.id,
+  firstname: rest.firstname,
+  lastname: rest.lastname,
+  email: rest.email,
+  telephone: rest.telephone,
+  adress: rest.adress,
+  birthdate: rest.birthdate,
+  photo: rest.photo,
+  pseudo: rest.pseudo
+};
+
+return { token, user: safeUser };
 }
 
 async updateRoles(userId: number, roles: string[]): Promise<void> {

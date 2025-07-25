@@ -14,6 +14,8 @@ interface ItripRepository {
     duree_max?: number;
   }): Promise<Trip[]>;
   findTripDetailsById(covoiturage_id: number):Promise<TripDetails | null>;
+  bookTrip(covoiturage_id: number, userId: number, montant: number): Promise<void>;
+  
 }
 
 // implémentation
@@ -155,5 +157,15 @@ GROUP BY c.covoiturage_id;
     avis: avisRows,
   }
 
+  }
+
+  async bookTrip(covoiturage_id: number, userId: number, montant: number): Promise<void> {
+      const [existing] = await this.database.execute("SELECT * FROM participe WHERE user_id = ? AND covoiturage_id = ?", [userId, covoiturage_id]) as [RowDataPacket[], any];
+
+      if ((existing as RowDataPacket[]).length > 0) {
+        throw new Error("vous avez deja reserver ce trajet")
+      }
+//inscription
+      await this.database.execute("INSERT INTO participe (user_id, covoiturage_id, date_reservation,montant_debite, statut) VALUES (?,?,NOW(),?, ?)", [userId, covoiturage_id, montant, "confirmed"]);
   }
 }

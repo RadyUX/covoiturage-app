@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { useTripDetail } from "../hooks/useDetails";
-
+import LoginModal from "./LoginModal";
+import { useUser } from "../context/UserContext";
+import ConfirmModal from "./ConfirmModal";
 export interface Avis {
   avis_id: number;
   auteur: string;
@@ -38,6 +41,9 @@ interface Props {
 
 export default function TripDetailsModal({ onClose, open, tripId }: Props) {
   const { data: trip, isLoading, error } = useTripDetail(tripId ?? 0);
+  const [showLogin, setShowLogin] = useState<boolean>(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const { isAuthenticated } = useUser();
   if (!open || !tripId) return null;
   if (isLoading) return <p>Chargement...</p>;
   if (error) return <p>une erreur sest produite</p>;
@@ -123,7 +129,32 @@ export default function TripDetailsModal({ onClose, open, tripId }: Props) {
           <p className="p-[10px]">
             <strong>Préference : 💟</strong> {trip.texte_libre}
           </p>
-          <button className="p-[10px]">RESERVER</button>
+          {isAuthenticated ? (
+            <>
+              <button
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+                onClick={() => setShowConfirm(true)}
+              >
+                Participer
+              </button>
+              {showConfirm && (
+                <ConfirmModal
+                  tripCredit={trip.prix}
+                  onCancel={() => setShowConfirm(false)}
+                  onConfirm={() => {
+                    setShowConfirm(false);
+                    // appelle ici ton endpoint API de participation
+                    console.log("✅ Participation confirmée !");
+                  }}
+                />
+              )}
+            </>
+          ) : (
+            <button className="p-[10px]" onClick={() => setShowLogin(true)}>
+              RESERVER
+            </button>
+          )}
+          {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
         </div>
 
         <div className="mt-4 border-t pt-4">

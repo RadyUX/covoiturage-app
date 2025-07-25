@@ -60,4 +60,21 @@ getTripDetails = async(req: Request, res: Response) =>{
   res.status(500).json({error:"erreur serveur"})
 }
 }
+  async bookTrip(req: Request, res: Response){
+    try{
+      const userId = req.body.userId;
+      const {montant} = req.body;
+      const covoiturage_id = Number(req.params.id)
+
+      if(!userId || !montant){
+        return res.status(400).json({error: 'les champs sont requis'})
+      }
+      await this.tripservice.bookTrip(covoiturage_id, userId, montant);
+      res.status(200).json({message: "reservation effectué avec succés"})
+    }catch(error){
+      console.error("err dans bookTrip",error)
+      res.status(500).json({error:"erreur serveur"})
+    }
+  }
+
 }

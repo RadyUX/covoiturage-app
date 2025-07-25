@@ -13,7 +13,7 @@ export const useAuth = () => {
       email: string;
       password: string;
     }): Promise<string> => {
-      const res = await axios.post(`${API_URL}/user/login`, {
+      const res = await axios.post(`${API_URL}/api/users/login`, {
         email,
         password,
       });
@@ -26,14 +26,12 @@ export const useAuth = () => {
   });
 
   const register = useMutation({
-    mutationFn: async (
-      newUser: User,
-    ): Promise<{ token: string; user: User }> => {
-      const res = await axios.post(`${API_URL}/user/register`, newUser);
-      return res.data; // Assuming the response contains { token, user }
+    mutationFn: async (newUser: User) => {
+      const res = await axios.post(`${API_URL}/users/register`, newUser);
+      return res.data.token;
     },
-    onSuccess: ({ token, user }) => {
-      setUserContext({ ...user, token }); // Délègue la gestion au contexte
+    onSuccess: (token: string) => {
+      setUserContext(token);
     },
   });
   return {

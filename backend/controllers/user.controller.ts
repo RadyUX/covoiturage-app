@@ -31,8 +31,15 @@ async register(req: Request, res: Response) {
             return res.status(400).json({ error: "Email et mot de passe sont requis" });
         }
 
-        const user = await this.userService.login(email, password);
-        res.status(200).json(user);
+        const { token, user } = await this.userService.login(email, password);
+        console.log(user);
+// S’assure que password est absent
+
+
+res.status(200).json({
+  token,
+  user
+});
     } catch (err: any) {
         res.status(400).json({ error: err.message });
     }
@@ -41,7 +48,7 @@ async register(req: Request, res: Response) {
 async updateUserRoles(req: Request, res: Response): Promise<Response> {
     try {
         const userId = parseInt(req.params.userId, 10);
-        const { roles } = req.body; // Exemple : { roles: ["chauffeur", "passager"] }
+        const { roles } = req.body; // { roles: ["chauffeur", "passager"] }
 
         if (!Array.isArray(roles)) {
             return res.status(400).json({ error: "Le champ 'roles' doit être un tableau" });

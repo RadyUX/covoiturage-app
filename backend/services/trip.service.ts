@@ -32,4 +32,9 @@ async getTripDetails(id: number): Promise<TripDetails | null>{
   return await tripRepository.findTripDetailsById(id);
 }
 
+
+async bookTrip(covoiturage_id: number, userId: number, montant: number): Promise<void>{
+  return await tripRepository.bookTrip(covoiturage_id, userId, montant)
+}
+
 }

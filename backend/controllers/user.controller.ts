@@ -37,4 +37,33 @@ async register(req: Request, res: Response) {
         res.status(400).json({ error: err.message });
     }
 }
+
+async updateUserRoles(req: Request, res: Response): Promise<Response> {
+    try {
+        const userId = parseInt(req.params.userId, 10);
+        const { roles } = req.body; // Exemple : { roles: ["chauffeur", "passager"] }
+
+        if (!Array.isArray(roles)) {
+            return res.status(400).json({ error: "Le champ 'roles' doit être un tableau" });
+        }
+
+        await this.userService.updateRoles(userId, roles);
+        return res.status(200).json({ message: "Rôles mis à jour avec succès" });
+    } catch (err) {
+        console.error("Erreur lors de la mise à jour des rôles :", err);
+        const errorMessage = err instanceof Error ? err.message : "Erreur inconnue";
+        return res.status(500).json({ error: errorMessage });
+    }
+}
+  async userGetRoles(req: Request, res: Response): Promise<Response>{
+    try{
+        const userId= parseInt(req.params.userId, 10);
+        const userRoles = await this.userService.userGetRoles(userId);
+        return res.status(200).json({roles: userRoles})
+
+    }catch(err){
+        console.error("erreur lors de la récuperation des roles", err)
+        return res.status(500).json({error: "erreur interne du serveur"})
+    }
+  }
 }

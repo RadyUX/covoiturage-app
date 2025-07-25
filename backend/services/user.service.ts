@@ -58,5 +58,42 @@ if (!isPasswordValid) {
 
     return { token, user: existingUser };
 }
+
+async updateRoles(userId: number, roles: string[]): Promise<void> {
+    // Vérifie si l'utilisateur existe
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+        throw new Error("Utilisateur introuvable");
+    }
+
+    // Récupère les rôles actuels de l'utilisateur
+    const currentRoles = await this.userRepository.getUserRoles(userId);
+
+    // Détermine les rôles à ajouter
+    const rolesToAdd = roles.filter((role) => !currentRoles.includes(role));
+
+    // Détermine les rôles à supprimer
+    const rolesToRemove = currentRoles.filter((role) => !roles.includes(role));
+
+    // Ajoute les nouveaux rôles
+    for (const role of rolesToAdd) {
+        await this.userRepository.addRoleToUser(userId, role);
+    }
+
+    // Supprime les rôles désélectionnés
+    for (const role of rolesToRemove) {
+        await this.userRepository.removeRoleFromUser(userId, role);
+    }
+}
+
+
+async userGetRoles(userId: number): Promise<string[]>{
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+        throw new Error("Utilisateur introuvable");
+    }
+    const roles = await this.userRepository.getUserRoles(userId);
+    return roles;
+}
     }
 

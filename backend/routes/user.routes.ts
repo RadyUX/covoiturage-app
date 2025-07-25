@@ -14,5 +14,6 @@ const userController = new UserController(userService);
 // Définis les routes
 router.post("/register", userController.register.bind(userController));
 router.post("/login", userController.login.bind(userController));
-
+router.get("/:userId/roles", userController.userGetRoles.bind(userController))
+router.put("/:userId/roles", userController.updateUserRoles.bind(userController))
 export default router;

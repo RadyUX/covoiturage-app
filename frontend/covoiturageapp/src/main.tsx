@@ -11,15 +11,17 @@ import MainLayout from "./layouts/MainLayout.tsx";
 import MentionLegal from "./pages/MentionLegal.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserProvider } from "./context/UserContext.tsx";
+import Register from "./pages/Register.tsx";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <MainLayout />, // 👈 avec Navbar + Outlet
+    element: <MainLayout />, //  Navbar + Outlet
     children: [
       { index: true, element: <Home /> },
       { path: "covoiturage", element: <Carpooling /> },
       { path: "contact", element: <Contact /> },
       { path: "login", element: <Login /> },
+      { path: "register", element: <Register /> },
       { path: "mentionlegal", element: <MentionLegal /> },
     ],
   },

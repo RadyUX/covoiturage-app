@@ -41,9 +41,20 @@ export class UserRepository implements IUserRepository {
 }
 
     async create(user: User): Promise<User> {
-       const [result] = await this.database.execute("INSERT INTO utilisateur(lastname,firstname, email,password,telephone,adress, birthdate,photo,pseudo) VALUES(?,?,?,?,?,?,?,?,?)",
-       [user.lastname, user.firstname, user.email, user.password, user.telephone, user.adress, user.birthdate, user.photo, user.pseudo]);
-       
+      const [result] = await this.database.execute(
+  "INSERT INTO utilisateur(lastname,firstname, email,password,telephone,adress, birthdate,photo,pseudo) VALUES(?,?,?,?,?,?,?,?,?)",
+  [
+    user.lastname ?? null,
+    user.firstname ?? null,
+    user.email,
+    user.password,
+    user.telephone ?? null,
+    user.adress ?? null,
+    user.birthdate ?? null,
+    user.photo ?? null,
+    user.pseudo,
+  ]
+);
     const id = (result as any).insertId;
 
      await this.database.execute(

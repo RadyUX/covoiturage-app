@@ -5,7 +5,7 @@ import { db } from './config/db';
 import tripRoutes from "./routes/trips.routes"
 import userRoutes from "./routes/user.routes"
 import mongoose from "mongoose"
-
+import CreditRoutes from "./routes/credits.route"
 
 dotenv.config();
 const mongoUri = process.env.MONGO_URI;
@@ -29,6 +29,7 @@ app.get('/', (req, res) => {
 });
 app.use("/api/trips", tripRoutes )
 app.use("/api/users", userRoutes)
+app.use("/api/credits", CreditRoutes)
 
 // Lancer le serveur
 app.listen(PORT, () => {

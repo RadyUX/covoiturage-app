@@ -3,28 +3,43 @@ import { User  } from "../models/user.models"
 import { UserRepository } from "../repositories/user.repository"
 import bcrypt from "bcrypt"
 import { db } from "../config/db"
+import { CreditService } from "./credit.service"
+import { CreditRepository } from "../repositories/credit.repository"
 
 type SafeUser = Omit<User, "password">;
+
+const creditRepository = new CreditRepository()
 export class UserService{
  private userRepository: UserRepository;
 
   constructor(userRepository: UserRepository) {
     this.userRepository = userRepository;
+   
   }
 
-    async register(user: User): Promise<User> {
+    async register(user: Pick<User, "email" | "password" | "pseudo">): Promise<SafeUser> {
    
     // Hash le mot de passe
     const hashedPassword = await bcrypt.hash(user.password, 10);
     console.log("Mot de passe hashé lors de l'enregistrement :", hashedPassword);
+     const sanitizedUser = {
+    email: user.email,
+    pseudo: user.pseudo,
+    password: hashedPassword,
+  };
 
     // Crée un nouvel utilisateur
-    const newUser = await this.userRepository.create({
-        ...user,
-        password: hashedPassword,
-    });
+    const newUser = await this.userRepository.create(sanitizedUser);
+console.log("ID du nouvel utilisateur :", newUser.id);
 
-    return newUser;
+    if (typeof newUser.id !== "number") {
+        throw new Error("L'identifiant de l'utilisateur nouvellement créé est invalide.");
+    }
+    await creditRepository.createInitialCredits(newUser.id, 20);
+
+     const { password: _, ...safeUser } = newUser;
+console.log("Nouvel utilisateur créé :", newUser);
+    return safeUser;
 }
 
     async login(email: string, password: string): Promise<{ token: string; user: SafeUser }> {

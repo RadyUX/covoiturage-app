@@ -27,7 +27,7 @@ export const useAuth = () => {
 
   const register = useMutation({
     mutationFn: async (newUser: User) => {
-      const res = await axios.post(`${API_URL}/users/register`, newUser);
+      const res = await axios.post(`${API_URL}/api/users/register`, newUser);
       return res.data.token;
     },
     onSuccess: (token: string) => {

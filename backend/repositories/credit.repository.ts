@@ -21,7 +21,7 @@ import { Credit } from "../models/credit.models";
     }
 
     async getCredits(userId: number): Promise<number> {
-        const user = await Credit.findById(userId)
+        const user = await Credit.findOne({user_id: userId})
         return user?.credits || 0
     }
 

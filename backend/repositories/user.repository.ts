@@ -68,10 +68,28 @@ export class UserRepository implements IUserRepository {
     }
 
 
-    async findByEmail(email: string): Promise<User | null> {
-    const [rows] = await this.database.execute("SELECT * FROM utilisateur WHERE email = ?", [email]);
-    console.log("Résultat de findByEmail :", rows);
-    return (rows as User[])[0] || null;
+   async findByEmail(email: string): Promise<User | null> {
+  const [rows] = await this.database.execute(
+    "SELECT user_id, firstname, lastname, email, telephone, adress, birthdate, photo, pseudo, password FROM utilisateur WHERE email = ?",
+    [email]
+  );
+  console.log("Résultat de findByEmail :", rows);
+
+  const row = (rows as RowDataPacket[])[0];
+  if (!row) return null;
+
+  return {
+    id: row.user_id, // Mappe correctement user_id vers id
+    firstname: row.firstname ?? null,
+    lastname: row.lastname ?? null,
+    email: row.email,
+    telephone: row.telephone ?? null,
+    adress: row.adress ?? null,
+    birthdate: row.birthdate ?? null,
+    photo: row.photo ?? null,
+    pseudo: row.pseudo,
+    password: row.password, // Inclure le mot de passe si nécessaire
+  } as User;
 }
 
 async addRoleToUser(userId: number, roleName: string): Promise<void> {

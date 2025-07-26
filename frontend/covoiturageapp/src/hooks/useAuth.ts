@@ -4,7 +4,6 @@ import { API_URL } from "../../config";
 import { useMutation } from "@tanstack/react-query";
 export const useAuth = () => {
   const { login: setUserContext, logout } = useUser();
-
   const login = useMutation({
     mutationFn: async ({
       email,
@@ -12,26 +11,27 @@ export const useAuth = () => {
     }: {
       email: string;
       password: string;
-    }): Promise<string> => {
+    }): Promise<{ token: string; user: User }> => {
       const res = await axios.post(`${API_URL}/api/users/login`, {
         email,
         password,
       });
-      // Assuming the token is in res.data.token
-      return res.data.token;
+      return res.data;
     },
-    onSuccess: (token: string) => {
-      setUserContext(token);
+    onSuccess: ({ token, user }) => {
+      setUserContext(token, user); // <- OK
     },
   });
 
   const register = useMutation({
-    mutationFn: async (newUser: User) => {
+    mutationFn: async (
+      newUser: User,
+    ): Promise<{ token: string; user: User }> => {
       const res = await axios.post(`${API_URL}/api/users/register`, newUser);
-      return res.data.token;
+      return res.data;
     },
-    onSuccess: (token: string) => {
-      setUserContext(token);
+    onSuccess: ({ token, user }) => {
+      setUserContext(token, user);
     },
   });
   return {

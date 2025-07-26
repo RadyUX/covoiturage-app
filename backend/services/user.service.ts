@@ -67,23 +67,28 @@ if (!isPasswordValid) {
         throw new Error("JWT_SECRET n'est pas défini dans le fichier .env");
     }
 
-    const token = jwt.sign({ userId: existingUser.id }, jwt_secret, { expiresIn: "24h" });
+    const token = jwt.sign({
+  userId: existingUser.id,
+  email: existingUser.email,
+  pseudo: existingUser.pseudo
+}, jwt_secret, { expiresIn: "24h" });
     console.log("Connexion réussie pour :", email);
 
-
-   const { password: _, ...rest } = existingUser;
-const safeUser: SafeUser = {
-  id: rest.id,
-  firstname: rest.firstname,
-  lastname: rest.lastname,
-  email: rest.email,
-  telephone: rest.telephone,
-  adress: rest.adress,
-  birthdate: rest.birthdate,
-  photo: rest.photo,
-  pseudo: rest.pseudo
+console.log("Utilisateur trouvé :", existingUser);
+console.log("ID utilisateur :", existingUser?.id);
+  const safeUser: SafeUser = {
+  id: existingUser.id, // Ajoute explicitement l'ID utilisateur
+  firstname: existingUser.firstname,
+  lastname: existingUser.lastname,
+  email: existingUser.email,
+  telephone: existingUser.telephone,
+  adress: existingUser.adress,
+  birthdate: existingUser.birthdate,
+  photo: existingUser.photo,
+  pseudo: existingUser.pseudo,
 };
 
+console.log("Utilisateur renvoyé :", safeUser);
 return { token, user: safeUser };
 }
 

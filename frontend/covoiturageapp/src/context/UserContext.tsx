@@ -4,14 +4,13 @@ import {
   useState,
   useEffect,
   useCallback,
-  Children,
 } from "react";
 
 import type { ReactNode } from "react";
 import { jwtDecode } from "jwt-decode";
 
 interface DecodedToken {
-  id: number;
+  userId: number;
   email: string;
   pseudo: string;
   exp: number;
@@ -32,7 +31,7 @@ export interface User {
 }
 interface UserContextType {
   user: User | null;
-  login: (token: string) => void;
+  login: (token: string, user: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -48,7 +47,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       try {
         const decoded = jwtDecode<DecodedToken>(stored);
         if (decoded.exp * 1000 > Date.now()) {
-          setUser({ ...decoded, token: stored });
+          const userData: User = {
+            id: decoded.userId,
+            email: decoded.email,
+            pseudo: decoded.pseudo,
+            token: stored,
+          };
+          setUser(userData); // Utilise la même logique que dans login
         } else {
           localStorage.removeItem("userToken");
         }
@@ -57,21 +62,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       }
     }
   }, []);
-
-  const login = useCallback((token: string) => {
-    try {
-      const decoded = jwtDecode<DecodedToken>(token);
-      const userData: User = {
-        id: decoded.id,
-        email: decoded.email,
-        pseudo: decoded.pseudo,
-        token: token,
-      };
-      setUser(userData);
-      localStorage.setItem("userToken", token);
-    } catch (err) {
-      console.error("Échec du décodage du token", err);
-    }
+  const login = useCallback((token: string, userData: User) => {
+    setUser({ ...userData, token });
+    localStorage.setItem("userToken", token);
   }, []);
 
   const logout = useCallback(() => {

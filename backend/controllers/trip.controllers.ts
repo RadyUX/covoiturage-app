@@ -1,9 +1,13 @@
 import { TripDetails } from "../models/trip.model";
+import { CreditService } from "../services/credit.service";
 import { tripService } from "../services/trip.service";
 import { Request, Response } from "express";
 
 export class TripController {
   private tripservice = new tripService();
+  private creditService = new CreditService()
+
+
 
  getTrips = async (req: Request, res: Response) => {
     const filters = {
@@ -69,12 +73,26 @@ getTripDetails = async(req: Request, res: Response) =>{
       if(!userId || !montant){
         return res.status(400).json({error: 'les champs sont requis'})
       }
-      await this.tripservice.bookTrip(covoiturage_id, userId, montant);
+    
+      const alreadyBooked = await this.tripservice.alreadyBooked(covoiturage_id, userId)
+      if(alreadyBooked){
+        return res.status(400).json({error: "vous avez deja reserver ce trajet"})
+      }else{
+          await this.creditService.bookTrip(userId, montant)
+     await this.tripservice.bookTrip(covoiturage_id, userId, montant);
+     
+      console.log(`Déduction de ${montant} crédits pour l'utilisateur ${userId}`);
+      
       res.status(200).json({message: "reservation effectué avec succés"})
+      }
+     
+ 
     }catch(error){
       console.error("err dans bookTrip",error)
       res.status(500).json({error:"erreur serveur"})
     }
   }
+
+  
 
 }

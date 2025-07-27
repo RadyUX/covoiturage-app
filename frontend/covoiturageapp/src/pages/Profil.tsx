@@ -1,7 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState } from "react";
 import { useUser } from "../context/UserContext";
+import { useCar, type Car } from "../hooks/useCar";
+import AddVehicleModal from "../components/AddCarModal";
 
 export default function Profile() {
+  const [carModal, setCarModal] = useState(false);
   const { user } = useUser();
+  const { getCar } = useCar(user?.id ?? 0);
 
   return (
     <div className="bg-[#E8F5E9] min-h-screen font-sans">
@@ -24,21 +30,50 @@ export default function Profile() {
         {/* Véhicules */}
         <section>
           <h2 className="text-xl font-semibold mb-2">Mes véhicules 🚗</h2>
-          <button className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800">
+          <button
+            onClick={() => setCarModal(true)}
+            className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800"
+          >
             ajouter un véhicule
           </button>
-          <div className="bg-green-300 mt-4 p-4 rounded shadow flex flex-wrap justify-between items-center gap-2">
+          <AddVehicleModal
+            open={carModal}
+            onClose={() => setCarModal(false)}
+            userId={user?.id ?? 0}
+          />
+          {getCar.isLoading ? (
+            <p>Chargement des véhicules...</p>
+          ) : getCar.isError ? (
             <p>
-              <strong>Voiture 1</strong> - AA-000-AA - 09/10/11 - Ford - grise -
-              électrique - 8 places
+              {(getCar.error as any)?.response?.data?.error ||
+                getCar.error.message ||
+                "Une erreur est survenue"}
             </p>
-            <div className="flex gap-2 text-xl">
-              <button>✏️</button>
-              <button>🗑️</button>
+          ) : (
+            <div className="space-y-4 mt-4">
+              {(Array.isArray(getCar.data) ? getCar.data : []).map(
+                (car: Car) => (
+                  <div
+                    key={car.id}
+                    className="bg-green-300 p-4 rounded shadow flex flex-wrap justify-between items-center gap-2"
+                  >
+                    <p>
+                      <strong>{car.modele}</strong> — {car.couleur} -
+                      {car.marque_id}{" "}
+                      {car.energie ? "électrique" : "non éléctrique"}
+                      {car.immatriculatation} -{" "}
+                      {car.premiere_immatriculation_date}
+                    </p>
+                    <div className="flex gap-2 text-xl">
+                      <button>✏️</button>
+                      <button>🗑️</button>
+                    </div>
+                  </div>
+                ),
+              )}
             </div>
-          </div>
+          )}
         </section>
-
         {/* Préférences */}
         <section>
           <h2 className="text-xl font-semibold mb-2">Mes Préférences ⚙️</h2>

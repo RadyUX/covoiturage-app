@@ -10,12 +10,12 @@ import { Credit } from "../models/credit.models";
 
   export class CreditRepository implements ICreditRepository{
     async  deductCredits(userId: number, amount: number): Promise<void> {
-        await Credit.findByIdAndUpdate(userId, {
+        await Credit.findOneAndUpdate({ user_id: userId }, {
             $inc: {credits: -amount}
         })
     }
     async addCredits(userId: number, amount: number): Promise<void> {
-        await Credit.findByIdAndUpdate(userId, {
+        await Credit.findOneAndUpdate({ user_id: userId }, {
             $inc: {credits: amount}
         })
     }

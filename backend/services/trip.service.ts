@@ -3,8 +3,10 @@ import { db
  } from "../config/db";
 
 import { Trip, TripDetails } from "../models/trip.model";
+import { CreditRepository } from "../repositories/credit.repository";
 
  const tripRepository = new TripRepository(db)
+
 export class tripService {
 
   
@@ -34,7 +36,14 @@ async getTripDetails(id: number): Promise<TripDetails | null>{
 
 
 async bookTrip(covoiturage_id: number, userId: number, montant: number): Promise<void>{
+ 
   return await tripRepository.bookTrip(covoiturage_id, userId, montant)
+ 
 }
 
+
+async alreadyBooked(covoiturage_id: number, userId: number): Promise<boolean>{
+  const existingReservation = await tripRepository.findReservation(covoiturage_id, userId)
+  return !!existingReservation 
+}
 }

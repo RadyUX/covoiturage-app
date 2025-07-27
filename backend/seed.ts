@@ -18,12 +18,31 @@ await connection.execute("TRUNCATE TABLE voiture");
 await connection.execute("TRUNCATE TABLE utilisateur");
 await connection.execute("TRUNCATE TABLE marque");
 await connection.execute("SET FOREIGN_KEY_CHECKS = 1");
+await connection.execute("ALTER TABLE voiture MODIFY voiture_id INT AUTO_INCREMENT");
   const noms = ['Martin', 'Bernard', 'Dubois', 'Thomas', 'Robert'];
   const prenoms = ['Alice', 'Lucas', 'Emma', 'Hugo', 'Chloé'];
   const villes = ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice'];
   const modeles = ['Model X', 'Clio', '308', 'Civic', 'Golf'];
   const couleurs = ['Rouge', 'Bleu', 'Noir', 'Blanc', 'Gris'];
-  const marques = ['Tesla', 'Renault', 'Peugeot', 'Honda', 'Volkswagen'];
+  const marques =  [
+  'Abarth', 'Acura', 'Alfa Romeo', 'Aston Martin', 'Audi',
+  'Bentley', 'BMW', 'Bugatti', 'Buick', 'BYD',
+  'Cadillac', 'Chevrolet', 'Chrysler', 'Citroën', 'Cupra',
+  'Dacia', 'Daewoo', 'Daihatsu', 'Dodge', 'DS Automobiles',
+  'Ferrari', 'Fiat', 'Fisker', 'Ford', 'Genesis',
+  'GMC', 'Great Wall', 'Honda', 'Hummer', 'Hyundai',
+  'Infiniti', 'Isuzu', 'Iveco', 'Jaguar', 'Jeep',
+  'Kia', 'Koenigsegg', 'Lada', 'Lamborghini', 'Lancia',
+  'Land Rover', 'Lexus', 'Lincoln', 'Lotus', 'Lucid',
+  'Maserati', 'Mazda', 'McLaren', 'Mercedes-Benz', 'Mini',
+  'Mitsubishi', 'Nissan', 'Opel', 'Peugeot', 'Polestar',
+  'Pontiac', 'Porsche', 'Proton', 'Renault', 'Rolls-Royce',
+  'Rover', 'Saab', 'Samsung', 'Seat', 'Skoda',
+  'Smart', 'SsangYong', 'Subaru', 'Suzuki', 'Tata',
+  'Tesla', 'Toyota', 'Volkswagen', 'Volvo', 'Wiesmann',
+];
+
+
   const commentaires = [
     'Très bon conducteur, ponctuel et sympa.',
     'Voiture confortable, je recommande.',
@@ -60,22 +79,22 @@ await connection.execute("SET FOREIGN_KEY_CHECKS = 1");
   );
 }
 
-    for (let i = 1; i <= 5; i++) {
-    await connection.execute(
-      `INSERT INTO voiture (voiture_id, modele, immatriculation, energie, couleur, premiere_immatriculation_date, user_id, marque_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        i,
-        modeles[i % modeles.length],
-        1000 + i,
-        i % 2 === 0,
-        couleurs[i % couleurs.length],
-        '2019-01-01',
-        i,
-        i,
-      ]
-    );
-  }
+ for (let i = 1; i <= 5; i++) {
+  await connection.execute(
+    `INSERT INTO voiture (voiture_id, modele, immatriculation, energie, couleur, premiere_immatriculation_date, user_id, marque_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      i,
+      modeles[i % modeles.length],
+      1000 + i,
+      i % 2 === 0,
+      couleurs[i % couleurs.length],
+      '2019-01-01',
+      i,
+      (i % marques.length) + 1, // Associe une marque existante
+    ]
+  );
+}
 
   for (let i = 1; i <= 5; i++) {
     const date_depart = new Date();

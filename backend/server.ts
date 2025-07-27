@@ -6,6 +6,7 @@ import tripRoutes from "./routes/trips.routes"
 import userRoutes from "./routes/user.routes"
 import mongoose from "mongoose"
 import CreditRoutes from "./routes/credits.route"
+import CarRoutes from "./routes/car.routes"
 
 dotenv.config();
 const mongoUri = process.env.MONGO_URI;
@@ -30,7 +31,7 @@ app.get('/', (req, res) => {
 app.use("/api/trips", tripRoutes )
 app.use("/api/users", userRoutes)
 app.use("/api/credits", CreditRoutes)
-
+app.use("/api/cars", CarRoutes)
 // Lancer le serveur
 app.listen(PORT, () => {
   console.log(`✅ Serveur lancé sur http://localhost:${PORT}`);
@@ -48,6 +49,9 @@ async function testConnection() {
   // Ne ferme pas la connexion ici, laisse Express gérer le cycle de vie
 }
 
+app.get("/api/cars/test", (_, res) => {
+  res.json({ test: "manuelle ok" });
+});
 
 testConnection();
 

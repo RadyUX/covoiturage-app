@@ -168,4 +168,10 @@ GROUP BY c.covoiturage_id;
 //inscription
       await this.database.execute("INSERT INTO participe (user_id, covoiturage_id, date_reservation,montant_debite, statut) VALUES (?,?,NOW(),?, ?)", [userId, covoiturage_id, montant, "confirmed"]);
   }
+
+
+  async findReservation(covoiturage_id: number, userId: number): Promise<any>{
+    const [rows] = await this.database.execute("SELECT * FROM participe WHERE covoiturage_id = ? AND user_id = ?", [covoiturage_id, userId]) as [RowDataPacket[], any];
+    return rows.length > 0 ? rows[0] : null
+  }
 }

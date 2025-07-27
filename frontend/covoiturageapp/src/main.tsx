@@ -12,6 +12,7 @@ import MentionLegal from "./pages/MentionLegal.tsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserProvider } from "./context/UserContext.tsx";
 import Register from "./pages/Register.tsx";
+import Profil from "./pages/Profil.tsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -23,6 +24,7 @@ const router = createBrowserRouter([
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
       { path: "mentionlegal", element: <MentionLegal /> },
+      { path: "profil", element: <Profil /> },
     ],
   },
 ]);

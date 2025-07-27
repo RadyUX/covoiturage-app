@@ -26,7 +26,7 @@ export default function Navbar() {
       {isAuthenticated ? (
         <>
           <Link
-            to="/profile"
+            to="/profil"
             className="no-underline text-[#F5F5F5] hover:bg-[#A5D6A7] px-4 py-2 rounded"
           >
             Profil

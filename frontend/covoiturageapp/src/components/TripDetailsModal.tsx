@@ -3,6 +3,8 @@ import { useTripDetail } from "../hooks/useDetails";
 import LoginModal from "./LoginModal";
 import { useUser } from "../context/UserContext";
 import ConfirmModal from "./ConfirmModal";
+import axios from "axios";
+import { API_URL } from "../../config";
 export interface Avis {
   avis_id: number;
   auteur: string;
@@ -43,7 +45,7 @@ export default function TripDetailsModal({ onClose, open, tripId }: Props) {
   const { data: trip, isLoading, error } = useTripDetail(tripId ?? 0);
   const [showLogin, setShowLogin] = useState<boolean>(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const { isAuthenticated } = useUser();
+  const { isAuthenticated, user } = useUser();
   if (!open || !tripId) return null;
   if (isLoading) return <p>Chargement...</p>;
   if (error) return <p>une erreur sest produite</p>;
@@ -141,10 +143,29 @@ export default function TripDetailsModal({ onClose, open, tripId }: Props) {
                 <ConfirmModal
                   tripCredit={trip.prix}
                   onCancel={() => setShowConfirm(false)}
-                  onConfirm={() => {
-                    setShowConfirm(false);
-                    // appelle ici ton endpoint API de participation
-                    console.log("✅ Participation confirmée !");
+                  onConfirm={async () => {
+                    try {
+                      setShowConfirm(false);
+                      await axios.post(
+                        `${API_URL}/api/trips/${trip.covoiturage_id}/book`,
+                        { userId: user?.id, montant: trip.prix },
+                        {
+                          headers: {
+                            Authorization: `Bearer ${user?.token}`, // ajoute le token dans les entetes
+                          },
+                        },
+                      );
+                      console.log("✅ Participation confirmée !");
+                    } catch (error) {
+                      console.error(
+                        "Erreur lors de la réservation :",
+                        error.response?.data?.error || error.message,
+                      );
+                      alert(
+                        error.response?.data?.error ||
+                          "Une erreur est survenue.",
+                      );
+                    }
                   }}
                 />
               )}

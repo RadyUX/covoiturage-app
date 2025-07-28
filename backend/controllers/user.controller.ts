@@ -53,6 +53,10 @@ async updateUserRoles(req: Request, res: Response): Promise<Response> {
         if (!Array.isArray(roles)) {
             return res.status(400).json({ error: "Le champ 'roles' doit être un tableau" });
         }
+        
+    if (!roles.includes("passager")) {
+        roles.push("passager");
+        }
 
         await this.userService.updateRoles(userId, roles);
         return res.status(200).json({ message: "Rôles mis à jour avec succès" });

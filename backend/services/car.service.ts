@@ -4,7 +4,7 @@ import { CarRepository } from "../repositories/car.repository";
 
 const carRepository = new CarRepository(db)
 export class CarService {
-    async findCarByUserId(userId: number): Promise<Car | null>{
+    async findCarByUserId(userId: number): Promise<Car[]>{
         return carRepository.findCarByUserId(userId);
     }
 

@@ -4,7 +4,7 @@ import { Car } from "../models/car.models";
 interface ICarRepository{
       createCar(
     car: Car): Promise<void>;
-  findCarByUserId(userId: number): Promise<Car | null>;
+  findCarByUserId(userId: number): Promise<Car[]>;
   updateCar(
      userId: number,
     couleur: string,
@@ -49,7 +49,7 @@ export class CarRepository implements ICarRepository{
     );
   }
 
-    async findCarByUserId(userId: number): Promise<Car | null> {
+    async findCarByUserId(userId: number): Promise<Car[]> {
         const [rows] = await this.database.execute(
     `SELECT v.*, m.libellé
      FROM voiture v
@@ -57,8 +57,8 @@ export class CarRepository implements ICarRepository{
      WHERE v.user_id = ?`,
     [userId]
   );
-        const cars = rows as Car[];
-        return cars[0] || null
+        return rows as Car[];
+        
     }
 
     async deleteCar(userId: number, car_id: number): Promise<void> {

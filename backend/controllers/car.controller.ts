@@ -7,20 +7,23 @@ const carService = new CarService();
 
 
 export class CarController {
-    async findCarByUserId(req: Request, res: Response){
-     try {
-        const userId = parseInt(req.params.userId, 10)
-       
-        const car = await carService.findCarByUserId(userId);
-        if (!car) {
-            return res.status(400).json({ error: "aucune bagnole pour cette utilisateur" })
-        }
-        return res.status(200).json({ car })
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json({ error: "Erreur serveur" })
+   async findCarByUserId(req: Request, res: Response) {
+  try {
+    const userId = parseInt(req.params.userId, 10);
+
+    // Appelle le service pour récupérer toutes les voitures
+    const cars = await carService.findCarByUserId(userId);
+
+    if (!cars || cars.length === 0) {
+      return res.status(404).json({ error: "Aucune voiture trouvée pour cet utilisateur" });
     }
-    }
+
+    return res.status(200).json({ cars });
+  } catch (error) {
+    console.error("Erreur lors de la récupération des voitures :", error);
+    return res.status(500).json({ error: "Erreur serveur" });
+  }
+}
 
     
 

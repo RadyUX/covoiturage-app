@@ -11,15 +11,19 @@ export interface Car {
   immatriculatation: number;
   premiere_immatriculation_date: string;
   marque_id: number;
+  libellé: string;
 }
+
+type CarResponse = {
+  cars: Car[]; // `cars` est un tableau de voitures
+};
 export const useCar = (userId: number) => {
-  const getCar = useQuery({
+  const getCar = useQuery<CarResponse>({
     queryKey: ["cars", userId],
     queryFn: async () => {
-      const res = await axios.get<{ car: Car }>(
-        `${API_URL}/api/cars/${userId}`,
-      );
-      return res.data.car;
+      const res = await axios.get(`${API_URL}/api/cars/${userId}`);
+
+      return res.data.cars;
     },
     enabled: !!userId,
     refetchOnWindowFocus: false, // Désactive le refetch sur focus de la fenêtre

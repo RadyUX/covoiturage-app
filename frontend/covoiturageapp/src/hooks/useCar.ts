@@ -8,7 +8,7 @@ export interface Car {
   modele: string;
   couleur: string;
   energie: boolean;
-  immatriculatation: number;
+  immatriculation: number;
   premiere_immatriculation_date: string;
   marque_id: number;
   libellé: string;
@@ -21,14 +21,17 @@ export const useCar = (userId: number) => {
   const getCar = useQuery<CarResponse>({
     queryKey: ["cars", userId],
     queryFn: async () => {
-      const res = await axios.get(`${API_URL}/api/cars/${userId}`);
-
+      const token = localStorage.getItem("userToken"); // Récupère le token depuis le stockage local
+      const res = await axios.get(`${API_URL}/api/cars/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Ajoute le token dans les en-têtes
+        },
+      });
       return res.data.cars;
     },
     enabled: !!userId,
     refetchOnWindowFocus: false, // Désactive le refetch sur focus de la fenêtre
   });
-
   const createCar = useMutation({
     mutationFn: async (car: Car) => {
       const token = localStorage.getItem("userToken"); // Récupère le token depuis le stockage local

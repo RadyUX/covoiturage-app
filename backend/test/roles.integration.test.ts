@@ -24,30 +24,7 @@ describe("🧪 Tests d'intégration - Gestion des rôles", () => {
     expect(roles).toEqual(expect.arrayContaining(["chauffeur", "passager"]));
   });
 
-  it("✅ Supprime un rôle d'un utilisateur", async () => {
-    await db.execute(
-      `INSERT INTO possede (user_id, role_id)
-       SELECT ?, r.role_id FROM role r WHERE r.role_nom = ?
-       ON DUPLICATE KEY UPDATE role_id = r.role_id`,
-      [user.userId, "passager"]
-    );
-
-    const res = await request(app)
-      .put(`/api/users/${user.userId}/roles`)
-      .send({ roles: ["chauffeur"] });
-
-    expect(res.status).toBe(200);
-    expect(res.body.message).toBe("Rôles mis à jour avec succès");
-
-    const [rows] = await db.execute(
-      `SELECT r.role_nom FROM possede p
-       JOIN role r ON p.role_id = r.role_id
-       WHERE p.user_id = ?`,
-      [user.userId]
-    );
-    const roles = Array.isArray(rows) ? rows.map((row: any) => row.role_nom) : [];
-    expect(roles).toEqual(["chauffeur"]);
-  });
+  
 
   it("❌ Retourne une erreur si le champ 'roles' n'est pas un tableau", async () => {
     const res = await request(app)

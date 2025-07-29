@@ -9,6 +9,7 @@ import { CreditRepository } from "../repositories/credit.repository"
 type SafeUser = Omit<User, "password">;
 
 const creditRepository = new CreditRepository()
+
 export class UserService{
  private userRepository: UserRepository;
 
@@ -128,5 +129,7 @@ async userGetRoles(userId: number): Promise<string[]>{
     const roles = await this.userRepository.getUserRoles(userId);
     return roles;
 }
+
+
     }
 

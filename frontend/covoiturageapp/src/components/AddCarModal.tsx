@@ -54,7 +54,7 @@ export default function AddVehicleModal({ open, onClose, userId }: Props) {
     createCar.mutate(
       {
         id: 0,
-        immatriculatation: formData.immatriculation,
+        immatriculation: formData.immatriculation,
         premiere_immatriculation_date:
           formData.premiereImmatriculationDate.toISOString(),
         modele: formData.modele,
@@ -62,6 +62,11 @@ export default function AddVehicleModal({ open, onClose, userId }: Props) {
         energie: formData.energie,
         user_id: userId,
         marque_id: formData.marque_id,
+        libellé:
+          getMarques.data?.find(
+            (marque: { marque_id: number; libellé: string }) =>
+              marque.marque_id === formData.marque_id,
+          )?.libellé || "",
       },
       {
         onSuccess: () => {
@@ -89,7 +94,11 @@ export default function AddVehicleModal({ open, onClose, userId }: Props) {
               onChange={(e) =>
                 setFormData({ ...formData, marque_id: Number(e.target.value) })
               }
+              required
             >
+              <option value={0} disabled>
+                Sélectionner une marque
+              </option>
               {getMarques.isLoading ? (
                 <option>Chargement...</option>
               ) : getMarques.isError ? (

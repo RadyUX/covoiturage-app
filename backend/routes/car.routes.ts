@@ -6,7 +6,7 @@ const router = express.Router();
 const carController = new CarController();
 
 router.get("/marques", carController.getMarques.bind(carController))
-router.get("/:userId",  carController.findCarByUserId.bind(carController));
+router.get("/:userId", authMiddleware, carController.findCarByUserId.bind(carController));
 router.post("/create", authMiddleware, carController.createCar.bind(carController));
 
 export default router;

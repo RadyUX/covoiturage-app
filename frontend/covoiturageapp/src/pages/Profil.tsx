@@ -5,14 +5,32 @@ import { useCar, type Car } from "../hooks/useCar";
 import AddVehicleModal from "../components/AddCarModal";
 import axios from "axios";
 import { API_URL } from "../../config";
-
+import { usePreferences } from "../hooks/usePref";
 import { useEffect } from "react";
 
 export default function Profile() {
   const [roles, setRoles] = useState<string[]>([]);
+
   const [carModal, setCarModal] = useState(false);
+  const [showPreferenceInput, setShowPreferenceInput] = useState(false);
   const { user } = useUser();
   const { getCar } = useCar(user?.id ?? 0);
+  const { getPreferences, updatePreferences } = usePreferences(user?.id ?? 0);
+  const [localTexteLibre, setLocalTexteLibre] = useState(
+    getPreferences.data?.[0]?.texte_libre || "",
+  );
+  console.log("Données des préférences :", getPreferences.data);
+  const preferences = getPreferences.data?.[0] ?? {
+    fumeur: false,
+    animaux: false,
+    texte_libre: "",
+  };
+
+  useEffect(() => {
+    if (getPreferences.data) {
+      setLocalTexteLibre(getPreferences.data[0]?.texte_libre || "");
+    }
+  }, [getPreferences.data]);
   console.log("getCar:", getCar.data);
   useEffect(() => {
     const fetchRoles = async () => {
@@ -48,10 +66,12 @@ export default function Profile() {
   return (
     <div className="bg-[#E8F5E9] min-h-screen font-sans">
       {/* Header */}
-      <header className="bg-[#A5D6A7] text-white py-6 text-center text-lg">
-        Bonjour {user?.pseudo || "Utilisateur"}
-        <div className="flex justify-center gap-4 mt-2">
-          <label className="flex items-center gap-2">
+      <header className="bg-[#A5D6A7] text-white py-6 text-center text-lg h-[218px] flex flex-col items-center justify-center ">
+        <h1 className="text-[36px] ">
+          Bonjour {user?.pseudo || "Utilisateur"}
+        </h1>
+        <div className="flex justify-center gap-4 mt-[10px]">
+          <label className="flex items-center gap-2 p-[10px]">
             <input
               type="checkbox"
               checked={roles?.includes("chauffeur")}
@@ -59,23 +79,25 @@ export default function Profile() {
             />
             chauffeur
           </label>
-          <label className="flex items-center gap-2">
+          <label className="flex items-center gap-2 p-[10px]">
             <input type="checkbox" checked={true} disabled={true} />
             passager
           </label>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-10 space-y-10">
+      <main className="max-w-4xl mx-auto px-6 py-10 space-y-10 ml-[169px] mr-[169px] mt-[100px]">
         {/* Véhicules */}
 
         {roles && roles.includes("chauffeur") ? (
           <>
             <section>
-              <h2 className="text-xl font-semibold mb-2">Mes véhicules 🚗</h2>
+              <h2 className="text-xl font-semibold mb-2 text-[32px]">
+                Mes véhicules 🚗
+              </h2>
               <button
                 onClick={() => setCarModal(true)}
-                className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800"
+                className="bg-[#2E7D32] text-[#F5F5F5] px-[16px] py-[8px] rounded hover:bg-[#A5D6A7] outline-none"
               >
                 ajouter un véhicule
               </button>
@@ -95,16 +117,17 @@ export default function Profile() {
               ) : (
                 <div className="space-y-4 mt-4">
                   {(Array.isArray(getCar.data) ? getCar.data : []).map(
-                    (car: Car) => (
+                    (car: Car, index: number) => (
                       <div
                         key={car.id}
-                        className="bg-green-300 p-4 rounded shadow flex flex-wrap justify-between items-center gap-2"
+                        className="bg-[#A5D6A7] w-full h-[218px] p-[16px] rounded shadow flex flex-wrap justify-between items-center mt-[19px]"
                       >
+                        <h1>Voiture {index + 1}</h1>
                         <p>
                           <strong>{car.modele}</strong> — {car.couleur} -{" "}
                           {car.libellé}{" "}
                           {car.energie ? "électrique" : "non éléctrique"} -{" "}
-                          {car.immatriculatation} -{" "}
+                          {car.immatriculation} -{" "}
                           {new Date(
                             car.premiere_immatriculation_date,
                           ).toLocaleDateString()}
@@ -122,18 +145,90 @@ export default function Profile() {
 
             <section>
               <h2 className="text-xl font-semibold mb-2">Mes Préférences ⚙️</h2>
-              <div className="bg-green-300 p-4 rounded shadow flex items-center justify-between">
+              <div className="bg-[#A5D6A7] w-full h-[218px] p-[16px] rounded shadow flex flex-wrap justify-between items-center mt-[19px]">
                 <div className="flex gap-6">
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" checked />
-                    accepte les fumeurs
+                  <label className="flex items-center gap-[8px] mr-[16px]">
+                    <input
+                      type="checkbox"
+                      checked={preferences.fumeur}
+                      onChange={(e) =>
+                        updatePreferences.mutate(
+                          {
+                            ...preferences,
+                            fumeur: e.target.checked,
+                          },
+                          {
+                            onSuccess: () => {
+                              getPreferences.refetch(); // force la maj du cache
+                            },
+                          },
+                        )
+                      }
+                    />
+                    accepte les fumeurs 🚬
                   </label>
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" checked />
-                    accepte les animaux
+
+                  <label className="flex items-center gap-[8px] mr-[16px]">
+                    <input
+                      type="checkbox"
+                      checked={preferences.animaux}
+                      onChange={(e) =>
+                        updatePreferences.mutate(
+                          {
+                            ...preferences,
+                            animaux: e.target.checked,
+                          },
+                          {
+                            onSuccess: () => {
+                              getPreferences.refetch(); // force la maj du cache
+                            },
+                          },
+                        )
+                      }
+                    />
+                    accepte les animaux 🐶
                   </label>
+                  <p>
+                    {getPreferences.data?.[0]?.texte_libre ||
+                      "Aucune préférence définie."}
+                  </p>
                 </div>
-                <button className="bg-green-700 text-white px-3 py-2 rounded hover:bg-green-800">
+                {showPreferenceInput && (
+                  <>
+                    <input
+                      type="text"
+                      value={localTexteLibre}
+                      placeholder="Nouvelle préférence"
+                      onChange={(e) => setLocalTexteLibre(e.target.value)}
+                      className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+
+                    <button
+                      className="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                      onClick={() => {
+                        updatePreferences.mutate(
+                          {
+                            ...preferences,
+                            texte_libre: localTexteLibre,
+                          },
+                          {
+                            onSuccess: () => {
+                              getPreferences.refetch(); // force la maj du cache
+                            },
+                          },
+                        );
+                        console.log("Préférence ajoutée !");
+                        setShowPreferenceInput(false);
+                      }}
+                    >
+                      Ajouter
+                    </button>
+                  </>
+                )}
+                <button
+                  className="bg-[#2E7D32] text-[#F5F5F5] px-[16px] py-[8px] rounded hover:bg-[#A5D6A7] outline-none"
+                  onClick={() => setShowPreferenceInput((prev) => !prev)} // Bascule l'état
+                >
                   ajouter une préférence
                 </button>
               </div>

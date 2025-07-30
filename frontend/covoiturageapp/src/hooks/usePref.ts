@@ -37,11 +37,8 @@ export const usePreferences = (userId: number) => {
       });
       return res.data; // Retourne la réponse du serveur
     },
-    onSuccess: (updatedPref) => {
-      // Mets à jour immédiatement le cache pour éviter un refetch manuel
-      queryClient.setQueryData(["preferences", userId], () => {
-        return [updatedPref]; // car tu reçois une seule préférence
-      });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["prefs", userId] }); // Invalide le cache pour forcer une mise à jour
     },
   });
 

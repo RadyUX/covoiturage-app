@@ -37,15 +37,24 @@ export class CarRepository implements ICarRepository{
       modele,
       couleur,
       energie,
-      immatriculatation,
+      immatriculation,
       premiere_immatriculation_date,
       marque_id
     } = car;
+     console.log("Données reçues :", {
+    user_id,
+    modele,
+    couleur,
+    energie,
+    immatriculation,
+    premiere_immatriculation_date,
+    marque_id,
+  });
 
     await this.database.execute(
       `INSERT INTO voiture (user_id, modele, couleur, energie, immatriculation, premiere_immatriculation_date, marque_id)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [user_id, modele, couleur, energie, immatriculatation, premiere_immatriculation_date, marque_id]
+      [user_id, modele, couleur, energie, immatriculation, premiere_immatriculation_date, marque_id]
     );
   }
 

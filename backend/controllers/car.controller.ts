@@ -37,7 +37,17 @@ export class CarController {
       return res.status(500).json({ error: "Erreur serveur" });
     }
   }
-
+  
+  async deleteCar(req: Request, res: Response){
+    try{
+        const userId = parseInt(req.params.userId, 10);
+        const carId = parseInt(req.params.carId, 10)
+        await carService.deleteCar(userId, carId)
+    }catch(error){
+        console.error("erreur lors de la suppression de la voiture", error)
+        res.status(500).json({message: error})
+    }
+  }
   async getMarques(req: Request, res: Response) {
   try {
     const marques = await carService.getMarque();

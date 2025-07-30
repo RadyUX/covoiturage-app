@@ -26,6 +26,7 @@ import { Credit } from "../models/credit.models";
     }
 
    async createInitialCredits(userId: number, amount: number): Promise<void> {
+    console.log(`Tentative d'ajout de crédits pour l'utilisateur ${userId} avec montant ${amount}`);
   const newCredit = new Credit({
     user_id: userId, //  comme clé primaire
     credits: amount,

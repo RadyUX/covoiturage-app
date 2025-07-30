@@ -11,6 +11,10 @@ export class CarService {
     async createCar(car: Car): Promise<void>{
         return carRepository.createCar(car);
     }
+
+    async deleteCar(userId: number, car_id: number): Promise<void>{
+        return carRepository.deleteCar(userId, car_id);
+    }
      async getMarque(): Promise<{ marque_id: number; libellé: string }[]> {
     return carRepository.getAllMarques(); 
   }

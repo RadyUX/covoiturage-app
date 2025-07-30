@@ -15,7 +15,7 @@ async register(req: Request, res: Response) {
         const user = await this.userService.register(req.body);
         res.status(201).json(user);
     } catch (err: any) {
-        console.error("Erreur lors de l'enregistrement :", err.message);
+        console.error("Erreur lors de l'enregistrement  de l'utilisateur:", err.message);
         if (err.message.includes("Duplicate entry")) {
             return res.status(400).json({ error: "Un utilisateur avec cet email existe déjà" });
         }
@@ -53,7 +53,7 @@ async updateUserRoles(req: Request, res: Response): Promise<Response> {
         if (!Array.isArray(roles)) {
             return res.status(400).json({ error: "Le champ 'roles' doit être un tableau" });
         }
-        
+
     if (!roles.includes("passager")) {
         roles.push("passager");
         }
@@ -77,4 +77,6 @@ async updateUserRoles(req: Request, res: Response): Promise<Response> {
         return res.status(500).json({error: "erreur interne du serveur"})
     }
   }
+
+ 
 }

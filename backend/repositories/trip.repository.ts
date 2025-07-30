@@ -15,6 +15,7 @@ interface ItripRepository {
   }): Promise<Trip[]>;
   findTripDetailsById(covoiturage_id: number):Promise<TripDetails | null>;
   bookTrip(covoiturage_id: number, userId: number, montant: number): Promise<void>;
+  createTrip(trip: Trip): Promise<{ id: number }>;
   
 }
 
@@ -167,11 +168,38 @@ GROUP BY c.covoiturage_id;
       }
 //inscription
       await this.database.execute("INSERT INTO participe (user_id, covoiturage_id, date_reservation,montant_debite, statut) VALUES (?,?,NOW(),?, ?)", [userId, covoiturage_id, montant, "confirmed"]);
-  }
+   // Décrémente le nombre de places disponibles
+  await this.database.execute(
+    "UPDATE covoiturage SET nb_place = nb_place - 1 WHERE covoiturage_id = ? AND nb_place > 0",
+    [covoiturage_id]
+  );
+  
+    }
 
 
   async findReservation(covoiturage_id: number, userId: number): Promise<any>{
     const [rows] = await this.database.execute("SELECT * FROM participe WHERE covoiturage_id = ? AND user_id = ?", [covoiturage_id, userId]) as [RowDataPacket[], any];
     return rows.length > 0 ? rows[0] : null
   }
+
+  async createTrip(trip: Trip): Promise<{ id: number }> {
+    const [result] = await this.database.execute(
+    `INSERT INTO covoiturage (lieu_depart, lieu_arrivee,arrive_date, date_depart, heure_depart, arrive_heure, prix, nb_place, voiture_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      trip.lieu_depart,
+      trip.lieu_arrivee,
+      trip.arrive_date,
+      trip.date_depart,
+      trip.heure_depart,
+      trip.heure_arrivee,
+      trip.prix,
+      trip.nb_place,
+      trip.voiture_id,
+    ]
+  ) as [import("mysql2/promise").ResultSetHeader, any];
+
+  return { id: result.insertId };
+}
+
 }

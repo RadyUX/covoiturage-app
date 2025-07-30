@@ -45,5 +45,10 @@ async bookTrip(covoiturage_id: number, userId: number, montant: number): Promise
 async alreadyBooked(covoiturage_id: number, userId: number): Promise<boolean>{
   const existingReservation = await tripRepository.findReservation(covoiturage_id, userId)
   return !!existingReservation 
+
+}
+
+async createTrip(trip: Trip): Promise<{ id: number }>{
+  return await tripRepository.createTrip(trip)
 }
 }

@@ -42,12 +42,20 @@ export default function Navbar() {
           </button>
         </>
       ) : (
-        <Link
-          to="/login"
-          className="no-underline text-[#F5F5F5] hover:bg-[#A5D6A7] px-4 py-2 rounded"
-        >
-          Connexion
-        </Link>
+        <>
+          <Link
+            to="/login"
+            className="no-underline text-[#F5F5F5] hover:bg-[#A5D6A7] px-4 py-2 rounded"
+          >
+            Connexion
+          </Link>
+          <Link
+            to="/contact"
+            className="no-underline text-[#F5F5F5] hover:bg-[#A5D6A7] px-4 py-2 rounded"
+          >
+            Contact
+          </Link>
+        </>
       )}
     </div>
   );

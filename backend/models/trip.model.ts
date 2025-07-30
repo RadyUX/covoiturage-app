@@ -14,9 +14,10 @@ export interface Trip {
   covoiturage_id: number;
   date_depart: Date; 
   heure_depart: string; 
+  lieu_arrivee: string;
   lieu_depart: string;
   arrive_date: Date;
-  arrive_heure: string;
+  heure_arrivee: string;
   status: string;
   nb_place: number;
   prix: number;
@@ -48,6 +49,6 @@ export interface TripDetails {
   animaux: boolean;
   fumeur: boolean;
   texte_libre: string;
-   preferences: string[];
+  preferences: string[];
   avis: Avis[];
 }

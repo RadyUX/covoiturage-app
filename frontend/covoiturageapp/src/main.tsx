@@ -13,18 +13,45 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserProvider } from "./context/UserContext.tsx";
 import Register from "./pages/Register.tsx";
 import Profil from "./pages/Profil.tsx";
+// src/components/ProtectedRoute.tsx
+import { Navigate } from "react-router-dom";
+import { useUser } from "./context/UserContext.tsx";
+import NotFound from "./pages/NotFound.tsx";
+
+export default function ProtectedRoute({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { user } = useUser();
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
 const router = createBrowserRouter([
   {
     path: "/",
     element: <MainLayout />, //  Navbar + Outlet
     children: [
       { index: true, element: <Home /> },
+      { path: "*", element: <NotFound /> },
       { path: "covoiturage", element: <Carpooling /> },
       { path: "contact", element: <Contact /> },
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
       { path: "mentionlegal", element: <MentionLegal /> },
-      { path: "profil", element: <Profil /> },
+      {
+        path: "profil",
+        element: (
+          <ProtectedRoute>
+            <Profil />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
 ]);

@@ -2,7 +2,9 @@ import axios from "axios";
 import { useUser, type User } from "../context/UserContext";
 import { API_URL } from "../../config";
 import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 export const useAuth = () => {
+  const navigate = useNavigate();
   const { login: setUserContext, logout } = useUser();
   const login = useMutation({
     mutationFn: async ({
@@ -30,8 +32,9 @@ export const useAuth = () => {
       const res = await axios.post(`${API_URL}/api/users/register`, newUser);
       return res.data;
     },
-    onSuccess: ({ token, user }) => {
-      setUserContext(token, user);
+    onSuccess: () => {
+      console.log("Inscription OK, login requis");
+      navigate("/login");
     },
   });
   return {

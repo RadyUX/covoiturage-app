@@ -4,7 +4,7 @@ export interface Car{
     modele: string,
     couleur: string,
     energie: boolean,
-    immatriculatation: number,
+    immatriculation: number,
     premiere_immatriculation_date: string,
     marque_id: number
 }

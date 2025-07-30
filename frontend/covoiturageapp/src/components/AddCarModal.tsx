@@ -50,33 +50,40 @@ export default function AddVehicleModal({ open, onClose, userId }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    createCar.mutate(
-      {
-        id: 0,
-        immatriculation: formData.immatriculation,
-        premiere_immatriculation_date:
-          formData.premiereImmatriculationDate.toISOString(),
-        modele: formData.modele,
-        couleur: formData.couleur,
-        energie: formData.energie,
-        user_id: userId,
-        marque_id: formData.marque_id,
-        libellé:
-          getMarques.data?.find(
-            (marque: { marque_id: number; libellé: string }) =>
-              marque.marque_id === formData.marque_id,
-          )?.libellé || "",
+    const carData = {
+      voiture_id: 0,
+      immatriculation: formData.immatriculation,
+      premiere_immatriculation_date:
+        formData.premiereImmatriculationDate.toISOString(),
+      modele: formData.modele,
+      couleur: formData.couleur,
+      energie: formData.energie,
+      user_id: userId,
+      marque_id: formData.marque_id,
+      libellé:
+        getMarques.data?.find(
+          (marque: { marque_id: number; libellé: string }) =>
+            marque.marque_id === formData.marque_id,
+        )?.libellé || "",
+    };
+    if (
+      !carData.marque_id ||
+      !carData.immatriculation ||
+      !carData.premiere_immatriculation_date ||
+      !carData.modele ||
+      !carData.couleur
+    ) {
+      console.error("Données manquantes :", carData);
+      return;
+    }
+    createCar.mutate(carData, {
+      onSuccess: () => {
+        onClose();
       },
-      {
-        onSuccess: () => {
-          onClose();
-        },
-        onError: (err) => {
-          console.error("Erreur lors de la création :", err);
-        },
+      onError: (err) => {
+        console.error("Erreur lors de la création :", err);
       },
-    );
+    });
   };
 
   return (

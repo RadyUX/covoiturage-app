@@ -19,6 +19,7 @@ await connection.execute("TRUNCATE TABLE utilisateur");
 await connection.execute("TRUNCATE TABLE marque");
 await connection.execute("SET FOREIGN_KEY_CHECKS = 1");
 await connection.execute("ALTER TABLE voiture MODIFY voiture_id INT AUTO_INCREMENT");
+await connection.execute("ALTER TABLE covoiturage MODIFY covoiturage_id INT AUTO_INCREMENT")
   const noms = ['Martin', 'Bernard', 'Dubois', 'Thomas', 'Robert'];
   const prenoms = ['Alice', 'Lucas', 'Emma', 'Hugo', 'Chloé'];
   const villes = ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice'];

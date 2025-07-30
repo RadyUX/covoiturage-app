@@ -92,7 +92,28 @@ getTripDetails = async(req: Request, res: Response) =>{
       res.status(500).json({error:"erreur serveur"})
     }
   }
+  async createTrip(req: Request, res: Response){
+    try{
+      const trip = req.body;
+      const userId = req.body.userId;
+        if (!userId || !trip) {
+      return res.status(400).json({ error: "Les champs sont requis" });
+    }
 
+    console.log(req.body)
+    const createdTrip = await this.tripservice.createTrip(trip);
+
+    // Ajoute automatiquement le chauffeur au trajet pour l'historique
+    await this.tripservice.bookTrip(createdTrip.id, userId, 0); // Montant = 0 car le chauffeur ne paie pas
+
+      res.status(201).json({message: "Trajet créé avec succès"});
+      
+    }catch(error){
+      console.error("err dans createTrip",error)
+       console.log(req.body)
+      res.status(500).json({error:"erreur serveur"})
+    }
+  }
   
 
 }

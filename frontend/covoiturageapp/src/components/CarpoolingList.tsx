@@ -11,7 +11,7 @@ interface Trip {
   arrive_date: string;
   arrive_heure: string;
   nb_place: number;
-  prix: string;
+  prix: number;
   pseudo: string;
   photo: string;
   est_ecologique: boolean;

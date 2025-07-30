@@ -92,6 +92,20 @@ getTripDetails = async(req: Request, res: Response) =>{
       res.status(500).json({error:"erreur serveur"})
     }
   }
+
+  async cancelTrip(req: Request, res: Response){
+   const userId = req.body.userId;
+   const covoiturageId = parseInt(req.params.id, 10);
+   const credits = req.body.credits
+   try{
+     await this.tripservice.abortTrip(covoiturageId, userId);
+     await this.creditService.addCredits(userId, credits)
+     res.status(200).json({message: "Annulation réussie"});
+   }catch(error){
+     console.error("err dans cancelTrip",error)
+     res.status(500).json({error:"erreur serveur"})
+   }
+  }
   async createTrip(req: Request, res: Response){
     try{
       const trip = req.body;
@@ -114,6 +128,27 @@ getTripDetails = async(req: Request, res: Response) =>{
       res.status(500).json({error:"erreur serveur"})
     }
   }
+
+
   
+ async getHistory(req: Request, res: Response) {
+  try {
+    const userId = parseInt(req.params.userId, 10);
+    console.log("Requête reçue pour l'historique avec userId :", userId);
+
+    if (isNaN(userId)) {
+      console.error("ID utilisateur invalide :", req.params.userId);
+      return res.status(400).json({ error: "ID utilisateur invalide" });
+    }
+
+    const trips = await this.tripservice.getHistory(userId);
+    console.log("Historique des trajets :", trips);
+
+    res.status(200).json(trips);
+  } catch (error) {
+    console.error("Erreur lors de la récupération de l'historique des trajets :", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+}
 
 }

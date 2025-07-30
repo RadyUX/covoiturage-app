@@ -1,3 +1,4 @@
+import { promises } from "dns";
 import { Avis, Trip, TripDetails } from "../models/trip.model"
 import { Pool } from "mysql2/promise";
  import { RowDataPacket } from "mysql2/promise";
@@ -15,8 +16,9 @@ interface ItripRepository {
   }): Promise<Trip[]>;
   findTripDetailsById(covoiturage_id: number):Promise<TripDetails | null>;
   bookTrip(covoiturage_id: number, userId: number, montant: number): Promise<void>;
+  abortTrip(covoiturage_id: number,userId: number): Promise<void>;
   createTrip(trip: Trip): Promise<{ id: number }>;
-  
+  tripHistory(userId: number): Promise<Trip[]>;
 }
 
 // implémentation
@@ -27,6 +29,11 @@ export class TripRepository implements ItripRepository {
     this.database = database;
   }
 
+
+  async tripHistory(userId: number): Promise<Trip[]>{
+    const [rows] = await this.database.execute("SELECT * FROM covoiturage c JOIN participe p ON c.covoiturage_id = p.covoiturage_id WHERE p.user_id = ?", [userId]) as [RowDataPacket, any]
+    return rows as Trip[]
+  }
   async findTripByRequest(lieu_depart: string, lieu_arrivee: string, date: Date,filters?: {
     prix_max?: number;
     note_min?: number;
@@ -176,6 +183,14 @@ GROUP BY c.covoiturage_id;
   
     }
 
+
+    async abortTrip(covoiturage_id: number, userId: number): Promise<void>{
+      await this.database.execute("DELETE FROM participe WHERE covoiturage_id = ? AND user_id = ?", [covoiturage_id, userId]);
+      // incremente nb_place
+      await this.database.execute("UPDATE covoiturage SET nb_place = nb_place + 1 WHERE covoiturage_id = ?", [covoiturage_id])
+
+      
+    }
 
   async findReservation(covoiturage_id: number, userId: number): Promise<any>{
     const [rows] = await this.database.execute("SELECT * FROM participe WHERE covoiturage_id = ? AND user_id = ?", [covoiturage_id, userId]) as [RowDataPacket[], any];

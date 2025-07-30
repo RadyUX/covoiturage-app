@@ -8,10 +8,12 @@ import { API_URL } from "../../config";
 import { usePreferences } from "../hooks/usePref";
 import { useEffect } from "react";
 import { useCarpooling } from "../hooks/useCarpooling";
-
+import { useHistory } from "../hooks/useHistory";
+import type { Trip } from "../hooks/useTrips";
 export default function Profile() {
   const [roles, setRoles] = useState<string[]>([]);
-  const { createCarpooling } = useCarpooling();
+
+  const { createCarpooling, cancelCarpooling } = useCarpooling();
   const [formTrip, setFormTrip] = useState({
     lieu_depart: "",
     lieu_arrivee: "",
@@ -20,7 +22,7 @@ export default function Profile() {
     heure_depart: new Date().toLocaleDateString(),
     heure_arrivee: new Date().toLocaleDateString(),
     nb_place: 1,
-    prix: 0,
+    prix: 2,
     voiture_id: 0,
   });
   const [carModal, setCarModal] = useState(false);
@@ -31,6 +33,7 @@ export default function Profile() {
   const [localTexteLibre, setLocalTexteLibre] = useState(
     getPreferences.data?.[0]?.texte_libre || "",
   );
+  const { data: historyData } = useHistory(user?.id ?? 0);
   console.log("Données des préférences :", getPreferences.data);
   console.log("formtrip :", formTrip);
   const preferences = getPreferences.data?.[0] ?? {
@@ -70,6 +73,28 @@ export default function Profile() {
     } catch (err) {
       console.error("erreur lors de la suppression de la voiture :", err);
     }
+  };
+
+  const handleCancelTrip = (
+    tripId: number,
+    userId: number,
+    credits: number,
+  ) => {
+    cancelCarpooling.mutate(
+      { tripId, userId, credits },
+      {
+        onSuccess: (data) => {
+          console.log("Annulation réussie :", data.message);
+
+          // Rafraîchir l'historique ou afficher un message de succès
+          historyData.refetch();
+        },
+        onError: (error) => {
+          console.error("Erreur lors de l'annulation :", error);
+          // Afficher un message d'erreur
+        },
+      },
+    );
   };
 
   const handleCreateCarpooling = async () => {
@@ -466,14 +491,41 @@ export default function Profile() {
             Historique et trajet à venir 🕐
           </h2>
           <div className="space-y-3">
-            <div className="bg-[#A5D6A7]  px-[16px] py-[8px] rounded outline-none">
-              <p>
-                <strong>Trajet 1</strong> — Paris &gt; Marseille, le 20/10/2025
-              </p>
-              <button className="bg-green-800 text-white px-3 py-1 rounded hover:bg-green-900">
-                Annuler
-              </button>
-            </div>
+            {Array.isArray(historyData) ? (
+              historyData.map((history: Trip) => (
+                <div
+                  key={history.covoiturage_id}
+                  className="bg-[#A5D6A7] p-4 rounded shadow flex flex-col gap-2"
+                >
+                  <h3 className="text-lg font-semibold">
+                    {history.lieu_depart} - {history.lieu_arrivee}
+                  </h3>
+                  <p>
+                    Date: {new Date(history.date_depart).toLocaleDateString()} à{" "}
+                    {new Date(history.heure_depart).toLocaleTimeString()}
+                  </p>
+                  <p>
+                    Places disponibles: {history.nb_place} - Prix:{" "}
+                    {history.prix}€
+                  </p>
+                  {new Date(history.date_depart) > new Date() && (
+                    <button
+                      onClick={() =>
+                        handleCancelTrip(
+                          history.covoiturage_id,
+                          user?.id ?? 0,
+                          history.prix,
+                        )
+                      }
+                    >
+                      Annuler
+                    </button>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p>Rien dans Historique</p>
+            )}
           </div>
         </section>
       </main>

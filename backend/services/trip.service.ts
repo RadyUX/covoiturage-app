@@ -30,6 +30,10 @@ export class tripService {
   );
 }
 
+
+async getHistory(userId: number): Promise<Trip[]> {
+  return await tripRepository.tripHistory(userId);
+}
 async getTripDetails(id: number): Promise<TripDetails | null>{
   return await tripRepository.findTripDetailsById(id);
 }
@@ -39,6 +43,11 @@ async bookTrip(covoiturage_id: number, userId: number, montant: number): Promise
  
   return await tripRepository.bookTrip(covoiturage_id, userId, montant)
  
+}
+
+async abortTrip(covoiturage_id: number, userId: number): Promise<void>{
+  return await tripRepository.abortTrip(covoiturage_id, userId)
+  
 }
 
 

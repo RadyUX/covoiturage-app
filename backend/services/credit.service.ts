@@ -15,4 +15,7 @@ export class CreditService {
     getCredits(userId: number){
         return this.creditRepository.getCredits(userId)
     }
+    addCredits(userId: number, amount: number){
+        return this.creditRepository.addCredits(userId, amount)
+    }
 }

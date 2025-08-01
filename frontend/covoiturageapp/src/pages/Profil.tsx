@@ -10,9 +10,10 @@ import { useEffect } from "react";
 import { useCarpooling } from "../hooks/useCarpooling";
 import { useHistory } from "../hooks/useHistory";
 import type { Trip } from "../hooks/useTrips";
+import { useQueryClient } from "@tanstack/react-query";
 export default function Profile() {
   const [roles, setRoles] = useState<string[]>([]);
-
+  const queryClient = useQueryClient();
   const { createCarpooling, cancelCarpooling } = useCarpooling();
   const [formTrip, setFormTrip] = useState({
     lieu_depart: "",
@@ -69,6 +70,7 @@ export default function Profile() {
           getCar.refetch();
         },
       });
+      queryClient.invalidateQueries({ queryKey: ["cars"] });
       console.log("voiture supprimé avec succés");
     } catch (err) {
       console.error("erreur lors de la suppression de la voiture :", err);
@@ -153,7 +155,7 @@ export default function Profile() {
       {/* Header */}
       <header className="bg-[#A5D6A7] text-white py-6 text-center text-lg h-[218px] flex flex-col items-center justify-center ">
         <h1 className="text-[36px] ">
-          Bonjour {user?.pseudo || "Utilisateur"}
+          Bonjour {user?.pseudo || "Utilisateur"} 👋
         </h1>
         <div className="flex justify-center gap-4 mt-[10px]">
           <label className="flex items-center gap-2 p-[10px]">
@@ -501,22 +503,23 @@ export default function Profile() {
                     {history.lieu_depart} - {history.lieu_arrivee}
                   </h3>
                   <p>
-                    Date: {new Date(history.date_depart).toLocaleDateString()} à{" "}
-                    {new Date(history.heure_depart).toLocaleTimeString()}
+                    Date: {new Date(history.date_depart).toLocaleDateString()}
                   </p>
-                  <p>
-                    Places disponibles: {history.nb_place} - Prix:{" "}
-                    {history.prix}€
-                  </p>
-                  {new Date(history.date_depart) > new Date() && (
+                  <p>Prix: {history.prix} crédits</p>
+                  {new Date(history.date_depart).setHours(0, 0, 0, 0) >=
+                    new Date().setHours(0, 0, 0, 0) && (
                     <button
-                      onClick={() =>
+                      onClick={() => {
                         handleCancelTrip(
                           history.covoiturage_id,
                           user?.id ?? 0,
                           history.prix,
-                        )
-                      }
+                        );
+                        queryClient.invalidateQueries({
+                          queryKey: ["credits"],
+                        });
+                        alert("votre annulation a été prise en compte");
+                      }}
                     >
                       Annuler
                     </button>

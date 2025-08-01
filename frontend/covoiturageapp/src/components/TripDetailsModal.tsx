@@ -5,6 +5,7 @@ import { useUser } from "../context/UserContext";
 import ConfirmModal from "./ConfirmModal";
 import axios from "axios";
 import { API_URL } from "../../config";
+import { useQueryClient } from "@tanstack/react-query";
 export interface Avis {
   avis_id: number;
   auteur: string;
@@ -42,6 +43,7 @@ interface Props {
 }
 
 export default function TripDetailsModal({ onClose, open, tripId }: Props) {
+  const queryClient = useQueryClient();
   const { data: trip, isLoading, error } = useTripDetail(tripId ?? 0);
   const [showLogin, setShowLogin] = useState<boolean>(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -155,16 +157,24 @@ export default function TripDetailsModal({ onClose, open, tripId }: Props) {
                           },
                         },
                       );
+                      queryClient.invalidateQueries({ queryKey: ["credits"] });
+                      alert("Réservation réussie !");
+                      onClose(); // Ferme le modal après confirmation
                       console.log("✅ Participation confirmée !");
                     } catch (error) {
-                      console.error(
-                        "Erreur lors de la réservation :",
-                        error.response?.data?.error || error.message,
-                      );
-                      alert(
-                        error.response?.data?.error ||
-                          "Une erreur est survenue.",
-                      );
+                      if (axios.isAxiosError(error)) {
+                        console.error(
+                          "Erreur lors de la réservation :",
+                          error.response?.data?.error || error.message,
+                        );
+                        alert(
+                          error.response?.data?.error ||
+                            "Une erreur est survenue.",
+                        );
+                      } else {
+                        console.error("Erreur lors de la réservation :", error);
+                        alert("Une erreur est survenue.");
+                      }
                     }
                   }}
                 />

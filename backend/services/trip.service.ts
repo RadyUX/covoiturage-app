@@ -4,6 +4,7 @@ import { db
 
 import { Trip, TripDetails } from "../models/trip.model";
 import { CreditRepository } from "../repositories/credit.repository";
+import { User } from "../models/user.models";
 
  const tripRepository = new TripRepository(db)
 
@@ -50,7 +51,9 @@ async abortTrip(covoiturage_id: number, userId: number): Promise<void>{
   
 }
 
-
+async getTripParticipants(covoiturageId: number): Promise<User[]>{
+  return await tripRepository.getTripParticipants(covoiturageId)
+}
 async alreadyBooked(covoiturage_id: number, userId: number): Promise<boolean>{
   const existingReservation = await tripRepository.findReservation(covoiturage_id, userId)
   return !!existingReservation 

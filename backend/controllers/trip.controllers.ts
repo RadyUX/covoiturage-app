@@ -2,11 +2,17 @@ import { TripDetails } from "../models/trip.model";
 import { CreditService } from "../services/credit.service";
 import { tripService } from "../services/trip.service";
 import { Request, Response } from "express";
+import { UserService } from "../services/user.service";
+import { UserRepository } from "../repositories/user.repository";
 
 export class TripController {
   private tripservice = new tripService();
-  private creditService = new CreditService()
+  private creditService = new CreditService();
+  private userService: UserService;
 
+  constructor(userRepository: UserRepository) {
+    this.userService = new UserService(userRepository);
+  }
 
 
  getTrips = async (req: Request, res: Response) => {
@@ -98,6 +104,13 @@ getTripDetails = async(req: Request, res: Response) =>{
    const covoiturageId = parseInt(req.params.id, 10);
    const credits = req.body.credits
    try{
+    const userRoles = await this.userService.userGetRoles(userId)
+    const isChauffeur = userRoles.includes("chauffeur")
+      // Si l'utilisateur est un chauffeur, envoie un mail aux participants
+   if(isChauffeur){
+    console.log("chauufeur")
+   }
+
      await this.tripservice.abortTrip(covoiturageId, userId);
      await this.creditService.addCredits(userId, credits)
      res.status(200).json({message: "Annulation réussie"});
@@ -130,7 +143,7 @@ getTripDetails = async(req: Request, res: Response) =>{
   }
 
 
-  
+
  async getHistory(req: Request, res: Response) {
   try {
     const userId = parseInt(req.params.userId, 10);

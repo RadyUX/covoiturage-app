@@ -43,6 +43,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const stored = localStorage.getItem("userToken");
+
     if (stored) {
       try {
         const decoded = jwtDecode<DecodedToken>(stored);

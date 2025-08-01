@@ -146,6 +146,7 @@ export default function AddVehicleModal({ open, onClose, userId }: Props) {
             placeholder="Modèle"
             value={formData.modele}
             onChange={handleChange}
+            autoComplete="off"
             className="w-full border rounded px-3 py-2"
             required
           />
@@ -153,6 +154,7 @@ export default function AddVehicleModal({ open, onClose, userId }: Props) {
             type="text"
             name="couleur"
             placeholder="Couleur"
+            autoComplete="off"
             value={formData.couleur}
             onChange={handleChange}
             className="w-full border rounded px-3 py-2"

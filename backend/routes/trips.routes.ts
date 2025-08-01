@@ -1,9 +1,13 @@
 import express from "express"
 import { TripController } from "../controllers/trip.controllers"
 import { authMiddleware } from "../middlewares/auth"
+import { UserService } from "../services/user.service"
+import { UserRepository } from "../repositories/user.repository"
+import { db } from "../config/db"
 
 const router = express.Router()
-const tripController = new TripController()
+const userRepository = new UserRepository(db);
+const tripController = new TripController(userRepository)
 
 router.get("/", tripController.getTrips)
 router.get("/:id", tripController.getTripDetails)

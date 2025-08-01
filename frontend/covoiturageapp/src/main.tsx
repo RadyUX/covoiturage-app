@@ -24,7 +24,11 @@ export default function ProtectedRoute({
   children: React.ReactNode;
 }) {
   const { user } = useUser();
+  const token = localStorage.getItem("userToken");
 
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
   if (!user) {
     return <Navigate to="/login" replace />;
   }

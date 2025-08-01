@@ -2,6 +2,7 @@ import { promises } from "dns";
 import { Avis, Trip, TripDetails } from "../models/trip.model"
 import { Pool } from "mysql2/promise";
  import { RowDataPacket } from "mysql2/promise";
+import { User } from "../models/user.models";
   
  
  
@@ -19,6 +20,7 @@ interface ItripRepository {
   abortTrip(covoiturage_id: number,userId: number): Promise<void>;
   createTrip(trip: Trip): Promise<{ id: number }>;
   tripHistory(userId: number): Promise<Trip[]>;
+  getTripParticipants(covoiturageId: number): Promise<User[]>
 }
 
 // implémentation
@@ -28,7 +30,11 @@ export class TripRepository implements ItripRepository {
   constructor(database: Pool) {
     this.database = database;
   }
-
+ async getTripParticipants(covoiturageId: number): Promise<User[]> {
+     const [rows] = await this.database
+       .execute("SELECT u.* FROM utilisateur u JOIN participe p ON u.user_id = p.user_id WHERE p.covoiturage_id = ?", [covoiturageId]);
+     return rows as User[];
+ }
 
   async tripHistory(userId: number): Promise<Trip[]>{
     const [rows] = await this.database.execute("SELECT * FROM covoiturage c JOIN participe p ON c.covoiturage_id = p.covoiturage_id WHERE p.user_id = ?", [userId]) as [RowDataPacket, any]

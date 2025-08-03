@@ -17,4 +17,5 @@ router.post("/create", authMiddleware, tripController.createTrip.bind(tripContro
 router.delete("/:id/cancel", authMiddleware, tripController.cancelTrip.bind(tripController))
 router.put("/start", authMiddleware, tripController.startTrip.bind(tripController))
 router.put("/end", authMiddleware, tripController.endTrip.bind(tripController))
+router.post("/validate", authMiddleware, tripController.validateTripEachParticipant.bind(tripController))
 export default router;

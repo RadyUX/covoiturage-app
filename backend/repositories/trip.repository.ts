@@ -39,6 +39,51 @@ export class TripRepository implements ItripRepository {
      return rows as User[];
  }
 
+// Met à jour le statut d’un participant
+async updateParticipantStatus(covoiturageId: number, userId: number, status: string): Promise<void> {
+  await this.database.execute(
+    `UPDATE participe
+     SET statut = ?
+     WHERE covoiturage_id = ? AND user_id = ?`,
+    [status, covoiturageId, userId]
+  );
+
+  // Après MAJ du participant, on met à jour le statut global du trajet
+  await this.updateTripStatus(covoiturageId);
+}
+
+// Met à jour le statut global du covoiturage selon les retours des participants
+async updateTripStatus(covoiturageId: number): Promise<void> {
+  const [rows] = await this.database.execute(
+    `SELECT COUNT(*) AS totalParticipants,
+            SUM(CASE WHEN statut = 'validated' THEN 1 ELSE 0 END) AS validatedParticipants,
+            SUM(CASE WHEN statut = 'problem' THEN 1 ELSE 0 END) AS problemParticipants
+     FROM participe
+     WHERE covoiturage_id = ?`,
+    [covoiturageId]
+  ) as [RowDataPacket[], any];
+
+  const { totalParticipants, validatedParticipants, problemParticipants } = rows[0];
+
+  let newStatus: string;
+
+  if (problemParticipants > 0) {
+    newStatus = 'problem'; // Un problème est signalé
+  } else if (validatedParticipants === totalParticipants) {
+    newStatus = 'validated'; // Tout le monde est OK
+  } else {
+    newStatus = 'pending'; // Il manque des validations
+  }
+
+  // Mise à jour effective du statut du trajet
+  await this.database.execute(
+    `UPDATE covoiturage
+     SET status = ?
+     WHERE covoiturage_id = ?`,
+    [newStatus, covoiturageId]
+  );
+}
+
 async tripHistory(userId: number): Promise<Trip[]> {
   const [rows] = await this.database.execute(
     `SELECT c.*, 

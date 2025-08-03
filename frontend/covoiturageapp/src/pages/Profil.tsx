@@ -11,9 +11,10 @@ import { useCarpooling } from "../hooks/useCarpooling";
 import { useHistory } from "../hooks/useHistory";
 import type { Trip } from "../hooks/useTrips";
 import { useQueryClient } from "@tanstack/react-query";
+import FeedbackModal from "../components/FeedBackMmodal";
 export default function Profile() {
   const [roles, setRoles] = useState<string[]>([]);
-
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const queryClient = useQueryClient();
   const { createCarpooling, cancelCarpooling } = useCarpooling();
   const [formTrip, setFormTrip] = useState({
@@ -28,6 +29,7 @@ export default function Profile() {
     voiture_id: 0,
   });
   const [carModal, setCarModal] = useState(false);
+  const [tripId, setTripId] = useState<number | null>(null);
   const [showPreferenceInput, setShowPreferenceInput] = useState(false);
   const { user } = useUser();
   const { getCar, deleteCar } = useCar(user?.id ?? 0);
@@ -75,6 +77,40 @@ export default function Profile() {
       console.log("voiture supprimé avec succés");
     } catch (err) {
       console.error("erreur lors de la suppression de la voiture :", err);
+    }
+  };
+  console.log("FeedbackModal isOpen:", showFeedbackModal);
+  const handleValidation = async (
+    userId: number,
+    tripId: number,
+    status: string,
+  ) => {
+    try {
+      const token = localStorage.getItem("userToken");
+      const response = await axios.post(
+        `${API_URL}/api/trips/validate`,
+        {
+          covoiturage_id: tripId,
+          user_id: userId,
+          status: status,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      console.log("Validation enregistrée :", response.data);
+      setShowFeedbackModal(true);
+      queryClient.invalidateQueries({ queryKey: ["history", user?.id ?? 0] });
+      alert(
+        status === "validated"
+          ? "Merci pour votre validation !"
+          : "Votre problème a été signalé, un employé sera mis au jus ⚡.",
+      );
+    } catch (error) {
+      console.error("Erreur lors de la validation du trajet :", error);
+      alert("Une erreur est survenue lors de la validation.");
     }
   };
 
@@ -194,9 +230,37 @@ export default function Profile() {
       console.error("Erreur lors de la terminaison du trajet :", error);
     }
   };
-
+  console.log("historyData:", historyData.covoiturage_id);
+  const handleFeedbackSubmit = async (note: number, commentaire: string) => {
+    try {
+      const token = localStorage.getItem("userToken");
+      const response = await axios.post(
+        `${API_URL}/api/avis/add`,
+        {
+          commentaire,
+          note,
+          auteur_id: user?.id, // ID de l'utilisateur qui donne l'avis
+          covoiturage_id: tripId, // ID du trajet
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      console.log("Avis enregistré :", response.data);
+      setShowFeedbackModal(false);
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement de l'avis :", error);
+    }
+  };
   return (
     <div className="bg-[#E8F5E9] min-h-screen font-sans">
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        onSubmit={handleFeedbackSubmit}
+      />
       {/* Header */}
       <header className="bg-[#A5D6A7] text-white py-6 text-center text-lg h-[218px] flex flex-col items-center justify-center ">
         <h1 className="text-[36px] ">
@@ -614,6 +678,45 @@ export default function Profile() {
                             </button>
                           )}
                         </>
+                      )}
+                      {!history.isOwner && history.isEnded && (
+                        <div className="bg-[#FFCDD2] p-4 rounded shadow flex flex-col gap-2">
+                          <h3 className="text-lg font-semibold">
+                            Valider le trajet
+                          </h3>
+                          <p>
+                            Veuillez indiquer si le trajet s&#39;est bien passé
+                            :
+                          </p>
+                          <div className="flex gap-4">
+                            <button
+                              className="bg-[#2E7D32] text-white px-4 py-2 rounded hover:bg-[#1B5E20]"
+                              onClick={() => {
+                                setTripId(history.covoiturage_id);
+                                handleValidation(
+                                  user?.id ?? 0,
+                                  history.covoiturage_id,
+                                  "validated",
+                                );
+                              }}
+                            >
+                              Tout s&#39;est bien passé 👍
+                            </button>
+                            <button
+                              className="bg-[#D32F2F] text-white px-4 py-2 rounded hover:bg-[#B71C1C]"
+                              onClick={() => {
+                                setTripId(history.covoiturage_id);
+                                handleValidation(
+                                  user?.id ?? 0,
+                                  history.covoiturage_id,
+                                  "problem",
+                                );
+                              }}
+                            >
+                              Problème rencontré 👎
+                            </button>
+                          </div>
+                        </div>
                       )}
                     </>
                   )}

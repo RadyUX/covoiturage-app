@@ -194,4 +194,21 @@ async endTrip(req: Request, res: Response) {
     console.error("Erreur lors de la fin du trajet :", error);
     res.status(500).json({ error: "Erreur serveur" });
   }}
+
+  async validateTripEachParticipant(req: Request, res: Response) {
+    const {covoiturage_id, user_id, status} = req.body;
+  
+  console.log("covoiturage_id :", covoiturage_id);
+  console.log("user_id :", user_id);
+  console.log("status :", status);
+
+    try{
+      await this.tripservice.updateParticipantStatus(covoiturage_id, user_id, status);
+      await this.tripservice.updateTripStatus(covoiturage_id)
+      res.status(200).json({ message: "Statut du participant mis à jour avec succès" });
+    } catch (error) {
+      console.error("Erreur lors de la validation du participant :", error);
+      res.status(500).json({ error: "Erreur serveur" });
+    }
+  }
 }

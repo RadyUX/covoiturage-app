@@ -7,6 +7,7 @@ import userRoutes from "./routes/user.routes"
 import mongoose from "mongoose"
 import CreditRoutes from "./routes/credits.route"
 import CarRoutes from "./routes/car.routes"
+import AvisRoutes from "./routes/avis.routes"
 import preferenceRoutes from "./routes/preference.routes"
 dotenv.config();
 const mongoUri = process.env.MONGO_URI;
@@ -33,6 +34,7 @@ app.use("/api/users", userRoutes)
 app.use("/api/credits", CreditRoutes)
 app.use("/api/cars", CarRoutes)
 app.use("/api/pref", preferenceRoutes)
+app.use("/api/avis", AvisRoutes)
 // Lancer le serveur
 app.listen(PORT, () => {
   console.log(`✅ Serveur lancé sur http://localhost:${PORT}`);

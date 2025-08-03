@@ -72,4 +72,11 @@ async endTrip(covoiturage_id: number, userId: number): Promise<void>{
   return await tripRepository.endTrip(covoiturage_id, userId);
 }
 
+async updateTripStatus(covoiturageId: number): Promise<void> {
+  return await tripRepository.updateTripStatus(covoiturageId);
+}
+
+async updateParticipantStatus(covoiturageId: number, userId: number, status: string): Promise<void> {
+  return await tripRepository.updateParticipantStatus(covoiturageId, userId, status);
+}
 }

@@ -15,4 +15,6 @@ router.post("/:id/book", authMiddleware, tripController.bookTrip.bind(tripContro
 router.get("/:userId/history", authMiddleware, tripController.getHistory.bind(tripController))
 router.post("/create", authMiddleware, tripController.createTrip.bind(tripController))
 router.delete("/:id/cancel", authMiddleware, tripController.cancelTrip.bind(tripController))
+router.put("/start", authMiddleware, tripController.startTrip.bind(tripController))
+router.put("/end", authMiddleware, tripController.endTrip.bind(tripController))
 export default router;

@@ -22,6 +22,7 @@ export interface Trip {
   nb_place: number;
   prix: number;
   voiture_id: number;
+  isOwner: boolean;
 }
 
 

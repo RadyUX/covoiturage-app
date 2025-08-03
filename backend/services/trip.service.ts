@@ -63,4 +63,13 @@ async alreadyBooked(covoiturage_id: number, userId: number): Promise<boolean>{
 async createTrip(trip: Trip): Promise<{ id: number }>{
   return await tripRepository.createTrip(trip)
 }
+
+async startTrip(covoiturage_id: number, userId: number): Promise<void>{
+  return await tripRepository.startTrip(covoiturage_id, userId);
+}
+
+async endTrip(covoiturage_id: number, userId: number): Promise<void>{
+  return await tripRepository.endTrip(covoiturage_id, userId);
+}
+
 }

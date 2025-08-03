@@ -21,12 +21,19 @@ export class PreferenceRepository implements IPreferenceRepository{
     return rows as Preference[];
   }
 
-  async update(userId: number, preference: Preference): Promise<void> {
-      await this.database.execute("UPDATE preference SET animaux = ?, fumeur = ?, texte_libre = ? WHERE user_id = ?", [
-          preference.animaux,
-          preference.fumeur,
-          preference.texte_libre,
-          userId
-      ]);
-  }
-}
+ async update(userId: number, preference: Preference): Promise<void> {
+  await this.database.execute(
+    `INSERT INTO preference (user_id, animaux, fumeur, texte_libre)
+     VALUES (?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE
+     animaux = VALUES(animaux),
+     fumeur = VALUES(fumeur),
+     texte_libre = VALUES(texte_libre)`,
+    [
+      userId,
+      preference.animaux,
+      preference.fumeur,
+      preference.texte_libre,
+    ]
+  );
+ }}

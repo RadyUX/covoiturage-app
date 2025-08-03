@@ -19,8 +19,11 @@ interface ItripRepository {
   bookTrip(covoiturage_id: number, userId: number, montant: number): Promise<void>;
   abortTrip(covoiturage_id: number,userId: number): Promise<void>;
   createTrip(trip: Trip): Promise<{ id: number }>;
+  startTrip(covoiturage_id: number, ownerId: number): Promise<void>;
+  endTrip(covoiturage_id: number, ownerId: number): Promise<void>;
   tripHistory(userId: number): Promise<Trip[]>;
   getTripParticipants(covoiturageId: number): Promise<User[]>
+
 }
 
 // implémentation
@@ -36,10 +39,21 @@ export class TripRepository implements ItripRepository {
      return rows as User[];
  }
 
-  async tripHistory(userId: number): Promise<Trip[]>{
-    const [rows] = await this.database.execute("SELECT * FROM covoiturage c JOIN participe p ON c.covoiturage_id = p.covoiturage_id WHERE p.user_id = ?", [userId]) as [RowDataPacket, any]
-    return rows as Trip[]
-  }
+async tripHistory(userId: number): Promise<Trip[]> {
+  const [rows] = await this.database.execute(
+    `SELECT c.*, 
+            CASE WHEN c.statut_trajet = 'en_cours' THEN true ELSE false END AS isStarted,
+            CASE WHEN c.statut_trajet = 'termine' THEN true ELSE false END AS isEnded,
+            CASE WHEN u.user_id = ? THEN true ELSE false END AS isOwner
+     FROM covoiturage c
+     JOIN voiture v ON c.voiture_id = v.voiture_id
+     JOIN utilisateur u ON v.user_id = u.user_id
+     JOIN participe p ON p.covoiturage_id = c.covoiturage_id
+     WHERE p.user_id = ?`,
+    [userId, userId]
+  ) as [RowDataPacket[], any];
+  return rows as Trip[];
+}
   async findTripByRequest(lieu_depart: string, lieu_arrivee: string, date: Date,filters?: {
     prix_max?: number;
     note_min?: number;
@@ -223,4 +237,47 @@ GROUP BY c.covoiturage_id;
   return { id: result.insertId };
 }
 
+
+async startTrip(covoiturage_id: number, ownerId: number): Promise<void> {
+  // Vérifie que l'utilisateur est le propriétaire légitime du trajet
+  const [ownerRows] = await this.database.execute(
+    `SELECT u.user_id
+     FROM covoiturage c
+     JOIN voiture v ON c.voiture_id = v.voiture_id
+     JOIN utilisateur u ON v.user_id = u.user_id
+     WHERE c.covoiturage_id = ? AND u.user_id = ?`,
+    [covoiturage_id, ownerId]
+  ) as [RowDataPacket[], any];
+
+  if (ownerRows.length === 0) {
+    throw new Error("Vous n'êtes pas autorisé à démarrer ce trajet.");
+  }
+
+  // Met à jour le statut du trajet
+  await this.database.execute(
+    "UPDATE covoiturage SET statut_trajet = 'en_cours' WHERE covoiturage_id = ? AND statut_trajet = 'attente'",
+    [covoiturage_id]
+  );
+}
+
+async endTrip(covoiturageId: number, ownerId: number): Promise<void> {
+ const [ownerRows] = await this.database.execute(
+    `SELECT u.user_id
+     FROM covoiturage c
+     JOIN voiture v ON c.voiture_id = v.voiture_id
+     JOIN utilisateur u ON v.user_id = u.user_id
+     WHERE c.covoiturage_id = ? AND u.user_id = ?`,
+    [covoiturageId, ownerId]
+  ) as [RowDataPacket[], any];
+
+  if (ownerRows.length === 0) {
+    throw new Error("Vous n'êtes pas autorisé à démarrer ce trajet.");
+  }
+
+  // Met à jour le statut du trajet
+  await this.database.execute(
+    "UPDATE covoiturage SET statut_trajet = 'termine' WHERE covoiturage_id = ? AND statut_trajet = 'en_cours'",
+    [covoiturageId]
+  );
+}
 }

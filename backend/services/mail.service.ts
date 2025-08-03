@@ -54,4 +54,16 @@ export class mailService {
 
     await transporter.sendMail(mailOptions);
   }
+
+  async sendArrivalNotification(participants: User[], tripId: number) {
+  const transporter = await this.createTransporter();
+  const mailOptions = {
+    from: process.env.USER_EMAIL,
+    to: participants.map((p) => p.email).join(","),
+    subject: "Validez votre trajet",
+    text: `Bonjour ${participants.map((p) => p.pseudo).join(", ")},\nVeuillez valider le trajet terminé (ID: ${tripId}) dans votre espace.`,
+  };
+  await transporter.sendMail(mailOptions);
+}
+
 }

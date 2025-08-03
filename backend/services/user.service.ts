@@ -37,7 +37,7 @@ console.log("ID du nouvel utilisateur :", newUser.id);
         throw new Error("L'identifiant de l'utilisateur nouvellement créé est invalide.");
     }
     await creditRepository.createInitialCredits(newUser.id, 20);
-
+  
      const { password: _, ...safeUser } = newUser;
 console.log("Nouvel utilisateur créé :", newUser);
     return safeUser;

@@ -4,16 +4,19 @@ import { tripService } from "../services/trip.service";
 import { Request, Response } from "express";
 import { UserService } from "../services/user.service";
 import { UserRepository } from "../repositories/user.repository";
+import { mailService } from "../services/mail.service";
 
 export class TripController {
   private tripservice = new tripService();
   private creditService = new CreditService();
   private userService: UserService;
+  private mailService = new  mailService()
 
   constructor(userRepository: UserRepository) {
     this.userService = new UserService(userRepository);
   }
 
+  
 
  getTrips = async (req: Request, res: Response) => {
     const filters = {
@@ -108,7 +111,8 @@ getTripDetails = async(req: Request, res: Response) =>{
     const isChauffeur = userRoles.includes("chauffeur")
       // Si l'utilisateur est un chauffeur, envoie un mail aux participants
    if(isChauffeur){
-    console.log("chauufeur")
+   const participants = await this.tripservice.getTripParticipants(covoiturageId)
+   
    }
 
      await this.tripservice.abortTrip(covoiturageId, userId);
@@ -164,4 +168,30 @@ getTripDetails = async(req: Request, res: Response) =>{
   }
 }
 
+
+
+async startTrip(req: Request, res: Response) {
+  const userId = req.body.user_id
+  const tripId = req.body.covoiturage_id;
+  try{
+    await this.tripservice.startTrip(tripId, userId);
+    res.status(200).json({ message: "Trajet démarré avec succès" });
+  } catch (error) {
+    console.error("Erreur lors du démarrage du trajet :", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+}
+
+async endTrip(req: Request, res: Response) {
+  const userId = req.body.user_id;
+  const tripId = req.body.covoiturage_id;
+  const participant = await this.tripservice.getTripParticipants(tripId)
+  try {
+    await this.tripservice.endTrip(tripId, userId);
+    await this.mailService.sendArrivalNotification(participant, tripId)
+    res.status(200).json({ message: "Trajet terminé avec succès" });
+  } catch (error) {
+    console.error("Erreur lors de la fin du trajet :", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }}
 }

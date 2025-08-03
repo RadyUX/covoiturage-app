@@ -13,6 +13,7 @@ import type { Trip } from "../hooks/useTrips";
 import { useQueryClient } from "@tanstack/react-query";
 export default function Profile() {
   const [roles, setRoles] = useState<string[]>([]);
+
   const queryClient = useQueryClient();
   const { createCarpooling, cancelCarpooling } = useCarpooling();
   const [formTrip, setFormTrip] = useState({
@@ -150,6 +151,50 @@ export default function Profile() {
     }
   };
 
+  const handleStart = async (tripId: number, userId: number) => {
+    try {
+      const token = localStorage.getItem("userToken");
+      const response = await axios.put(
+        `${API_URL}/api/trips/start`,
+        {
+          covoiturage_id: tripId,
+          user_id: userId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      queryClient.invalidateQueries({ queryKey: ["history", userId] });
+      console.log("Trajet démarré avec succès :", response.data);
+    } catch (error) {
+      console.error("Erreur lors du démarrage du trajet :", error);
+    }
+  };
+
+  const handleEnd = async (tripId: number, userId: number) => {
+    try {
+      const token = localStorage.getItem("userToken");
+      const response = await axios.put(
+        `${API_URL}/api/trips/end`,
+        {
+          covoiturage_id: tripId,
+          user_id: userId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      console.log("Trajet terminé avec succès :", response.data);
+      queryClient.invalidateQueries({ queryKey: ["history", userId] });
+    } catch (error) {
+      console.error("Erreur lors de la terminaison du trajet :", error);
+    }
+  };
+
   return (
     <div className="bg-[#E8F5E9] min-h-screen font-sans">
       {/* Header */}
@@ -256,12 +301,20 @@ export default function Profile() {
                     <input
                       type="checkbox"
                       checked={preferences.animaux}
-                      onChange={(e) =>
-                        updatePreferences.mutate({
+                      onChange={(e) => {
+                        const updatedPreferences = {
                           ...preferences,
                           animaux: e.target.checked,
-                        })
-                      }
+                        };
+                        console.log("Données envoyées :", updatedPreferences); // Ajoute un log
+                        updatePreferences.mutate(updatedPreferences, {
+                          onSuccess: () => {
+                            queryClient.invalidateQueries({
+                              queryKey: ["prefs", user?.id ?? 0],
+                            });
+                          },
+                        });
+                      }}
                     />
                     accepte les animaux 🐶
                   </label>
@@ -508,21 +561,61 @@ export default function Profile() {
                   <p>Prix: {history.prix} crédits</p>
                   {new Date(history.date_depart).setHours(0, 0, 0, 0) >=
                     new Date().setHours(0, 0, 0, 0) && (
-                    <button
-                      onClick={() => {
-                        handleCancelTrip(
-                          history.covoiturage_id,
-                          user?.id ?? 0,
-                          history.prix,
-                        );
-                        queryClient.invalidateQueries({
-                          queryKey: ["credits"],
-                        });
-                        alert("votre annulation a été prise en compte");
-                      }}
-                    >
-                      Annuler
-                    </button>
+                    <>
+                      {history.isStarted ? (
+                        <p>le trajet a deja commencé </p>
+                      ) : history.isEnded ? (
+                        <p>le trajet est terminé</p>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            handleCancelTrip(
+                              history.covoiturage_id,
+                              user?.id ?? 0,
+                              history.prix,
+                            );
+                            queryClient.invalidateQueries({
+                              queryKey: ["credits"],
+                            });
+                            queryClient.invalidateQueries({
+                              queryKey: ["history", user?.id ?? 0],
+                            });
+                            alert("votre annulation a été prise en compte");
+                          }}
+                        >
+                          Annuler
+                        </button>
+                      )}
+
+                      {console.log("ISOWNER", history.isOwner)}
+                      {history.isOwner && (
+                        <>
+                          {console.log("ISSTARTED", history.isStarted)}
+                          {history.isEnded ? (
+                            <p>Trajet terminé</p>
+                          ) : history.isStarted ? (
+                            <button
+                              onClick={() =>
+                                handleEnd(history.covoiturage_id, user?.id ?? 0)
+                              }
+                            >
+                              Terminer
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() =>
+                                handleStart(
+                                  history.covoiturage_id,
+                                  user?.id ?? 0,
+                                )
+                              }
+                            >
+                              Commencer
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </>
                   )}
                 </div>
               ))

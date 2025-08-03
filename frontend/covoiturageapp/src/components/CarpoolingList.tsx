@@ -16,6 +16,9 @@ interface Trip {
   photo: string;
   est_ecologique: boolean;
   note_moyenne: string;
+  isOwner?: boolean;
+  isStarted?: boolean;
+  isEnded?: boolean;
 }
 
 interface Props {

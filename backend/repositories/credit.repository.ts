@@ -18,6 +18,8 @@ import { Credit } from "../models/credit.models";
         await Credit.findOneAndUpdate({ user_id: userId }, {
             $inc: {credits: amount}
         })
+
+        
     }
 
     async getCredits(userId: number): Promise<number> {

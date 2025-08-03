@@ -45,7 +45,17 @@ export default function Profile() {
     animaux: false,
     texte_libre: "",
   };
-
+  useEffect(() => {
+    if (Array.isArray(getCar.data) && getCar.data.length > 0) {
+      setFormTrip((prevFormTrip) => ({
+        ...prevFormTrip,
+        voiture_id:
+          Array.isArray(getCar?.data) && getCar.data.length > 0
+            ? getCar.data[0].voiture_id
+            : 0, // Définit la première voiture comme sélectionnée par défaut
+      }));
+    }
+  }, [getCar.data]);
   useEffect(() => {
     if (getPreferences.data) {
       setLocalTexteLibre(getPreferences.data[0]?.texte_libre || "");
@@ -67,17 +77,31 @@ export default function Profile() {
   }, [user?.id]);
 
   const handleDeleteCar = async (carId: number) => {
-    try {
-      deleteCar.mutate(carId, {
-        onSuccess: () => {
-          getCar.refetch();
-        },
-      });
-      queryClient.invalidateQueries({ queryKey: ["cars"] });
-      console.log("voiture supprimé avec succés");
-    } catch (err) {
-      console.error("erreur lors de la suppression de la voiture :", err);
-    }
+    deleteCar.mutate(carId, {
+      onSuccess: () => {
+        getCar.refetch();
+        queryClient.invalidateQueries({ queryKey: ["cars"] });
+        console.log("Voiture supprimée avec succès");
+      },
+      onError: (err: any) => {
+        console.error("Erreur lors de la suppression de la voiture :", err);
+
+        if (
+          typeof err === "object" &&
+          err !== null &&
+          "response" in err &&
+          err.response?.status === 400
+        ) {
+          alert(
+            "Vous ne pouvez pas supprimer une voiture qui participe actuellement à un trajet.",
+          );
+        } else {
+          alert(
+            "Une erreur est survenue lors de la suppression de la voiture.",
+          );
+        }
+      },
+    });
   };
   console.log("FeedbackModal isOpen:", showFeedbackModal);
   const handleValidation = async (
@@ -230,7 +254,7 @@ export default function Profile() {
       console.error("Erreur lors de la terminaison du trajet :", error);
     }
   };
-  console.log("historyData:", historyData.covoiturage_id);
+
   const handleFeedbackSubmit = async (note: number, commentaire: string) => {
     try {
       const token = localStorage.getItem("userToken");
@@ -614,7 +638,7 @@ export default function Profile() {
               historyData.map((history: Trip) => (
                 <div
                   key={history.covoiturage_id}
-                  className="bg-[#A5D6A7] p-4 rounded shadow flex flex-col gap-2"
+                  className="bg-[#A5D6A7] p-4 rounded shadow flex flex-col gap-[10px] mt-[10px]"
                 >
                   <h3 className="text-lg font-semibold">
                     {history.lieu_depart} - {history.lieu_arrivee}

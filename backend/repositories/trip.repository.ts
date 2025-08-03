@@ -3,7 +3,7 @@ import { Avis, Trip, TripDetails } from "../models/trip.model"
 import { Pool } from "mysql2/promise";
  import { RowDataPacket } from "mysql2/promise";
 import { User } from "../models/user.models";
-  
+  import { CreditRepository } from "./credit.repository";
  
  
 
@@ -26,12 +26,15 @@ interface ItripRepository {
 
 }
 
-// implémentation
+
 export class TripRepository implements ItripRepository {
+  
   private database: Pool;
+  private creditRepository: CreditRepository;
 
   constructor(database: Pool) {
     this.database = database;
+    this.creditRepository = new CreditRepository();
   }
  async getTripParticipants(covoiturageId: number): Promise<User[]> {
      const [rows] = await this.database
@@ -54,34 +57,73 @@ async updateParticipantStatus(covoiturageId: number, userId: number, status: str
 
 // Met à jour le statut global du covoiturage selon les retours des participants
 async updateTripStatus(covoiturageId: number): Promise<void> {
-  const [rows] = await this.database.execute(
-    `SELECT COUNT(*) AS totalParticipants,
-            SUM(CASE WHEN statut = 'validated' THEN 1 ELSE 0 END) AS validatedParticipants,
-            SUM(CASE WHEN statut = 'problem' THEN 1 ELSE 0 END) AS problemParticipants
-     FROM participe
-     WHERE covoiturage_id = ?`,
+ const [ownerRows] = await this.database.execute(
+    `SELECT u.user_id
+     FROM covoiturage c
+     JOIN voiture v ON c.voiture_id = v.voiture_id
+     JOIN utilisateur u ON v.user_id = u.user_id
+     WHERE c.covoiturage_id = ?`,
     [covoiturageId]
   ) as [RowDataPacket[], any];
 
-  const { totalParticipants, validatedParticipants, problemParticipants } = rows[0];
+  const ownerId = ownerRows[0]?.user_id;
+  console.log("Owner ID:", ownerId);
 
-  let newStatus: string;
+  // Calcule les validations des participants en excluant le propriétaire
+ const [rows] = await this.database.execute(
+  `SELECT COUNT(*) AS totalParticipants,
+          SUM(CASE WHEN statut = 'validated' THEN 1 ELSE 0 END) AS validatedParticipants,
+          SUM(CASE WHEN statut = 'problem' THEN 1 ELSE 0 END) AS problemParticipants
+   FROM participe
+   WHERE covoiturage_id = ? AND user_id != ?`, // Exclut le propriétaire
+  [covoiturageId, ownerId]
+) as [RowDataPacket[], any];
 
-  if (problemParticipants > 0) {
-    newStatus = 'problem'; // Un problème est signalé
-  } else if (validatedParticipants === totalParticipants) {
-    newStatus = 'validated'; // Tout le monde est OK
-  } else {
-    newStatus = 'pending'; // Il manque des validations
-  }
+  console.log("Validation rows:", rows);
+
+ 
+const totalParticipants = Number(rows[0]?.totalParticipants || 0);
+const validatedParticipants = Number(rows[0]?.validatedParticipants || 0);
+const problemParticipants = Number(rows[0]?.problemParticipants || 0);
+let newStatus: string;
+
+if (problemParticipants > 0) {
+  newStatus = 'problem'; // Un problème est signalé
+} else if (validatedParticipants === totalParticipants) {
+  newStatus = 'validated'; // Tous les participants (sauf le propriétaire) ont validé
+} else {
+  newStatus = 'pending'; // Il manque des validations
+}
+console.log("Owner ID:", ownerId);
+console.log("Validation rows après correction:", rows);
+console.log("Total participants (sans propriétaire):", totalParticipants);
+console.log("Validated participants:", validatedParticipants);
+console.log("Problem participants:", problemParticipants);
+console.log("New status:", newStatus);
 
   // Mise à jour effective du statut du trajet
   await this.database.execute(
     `UPDATE covoiturage
-     SET status = ?
+     SET statut_trajet = ?
      WHERE covoiturage_id = ?`,
     [newStatus, covoiturageId]
   );
+  // Si le trajet est validé, calcule le total des crédits dépensés et crédite le propriétaire
+  if (newStatus === "validated") {
+    const [creditRow] = await this.database.execute(
+      `SELECT SUM(montant_debite) AS totalCredits
+       FROM participe
+       WHERE covoiturage_id = ?`,
+      [covoiturageId]
+    ) as [RowDataPacket[], any];
+
+    const totalCredits = Number(creditRow[0]?.totalCredits || 0);
+    console.log("Total credits to be added to owner:", totalCredits);
+
+    if (ownerId) {
+      await this.creditRepository.addCredits(ownerId, totalCredits);
+    }
+  }
 }
 
 async tripHistory(userId: number): Promise<Trip[]> {

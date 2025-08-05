@@ -70,7 +70,9 @@ async updateUserRoles(req: Request, res: Response): Promise<Response> {
     try{
         const userId= parseInt(req.params.userId, 10);
         const userRoles = await this.userService.userGetRoles(userId);
-        return res.status(200).json({roles: userRoles})
+
+        const idAdmin = userRoles.includes("admin")
+        return res.status(200).json({roles: userRoles, isAdmin: idAdmin})
 
     }catch(err){
         console.error("erreur lors de la récuperation des roles", err)

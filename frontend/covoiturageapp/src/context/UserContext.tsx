@@ -34,12 +34,14 @@ interface UserContextType {
   login: (token: string, user: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const stored = localStorage.getItem("userToken");
@@ -55,6 +57,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             token: stored,
           };
           setUser(userData); // Utilise la même logique que dans login
+          console.log("Token décodé :", decoded);
         } else {
           localStorage.removeItem("userToken");
         }
@@ -62,6 +65,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         localStorage.removeItem("userToken");
       }
     }
+    setIsLoading(false); // Fin du chargement
   }, []);
   const login = useCallback((token: string, userData: User) => {
     setUser({ ...userData, token });
@@ -76,7 +80,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const isAuthenticated = !!user;
 
   return (
-    <UserContext.Provider value={{ user, login, logout, isAuthenticated }}>
+    <UserContext.Provider
+      value={{ user, login, logout, isAuthenticated, isLoading }}
+    >
       {children}
     </UserContext.Provider>
   );

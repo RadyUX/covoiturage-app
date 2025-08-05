@@ -12,6 +12,8 @@ import { useHistory } from "../hooks/useHistory";
 import type { Trip } from "../hooks/useTrips";
 import { useQueryClient } from "@tanstack/react-query";
 import FeedbackModal from "../components/FeedBackMmodal";
+import { useRole } from "../hooks/useRole";
+import AdminDashboard from "./AdminDashboard";
 export default function Profile() {
   const [roles, setRoles] = useState<string[]>([]);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -29,6 +31,7 @@ export default function Profile() {
     voiture_id: 0,
   });
   const [carModal, setCarModal] = useState(false);
+
   const [tripId, setTripId] = useState<number | null>(null);
   const [showPreferenceInput, setShowPreferenceInput] = useState(false);
   const { user } = useUser();
@@ -38,6 +41,9 @@ export default function Profile() {
     getPreferences.data?.[0]?.texte_libre || "",
   );
   const { data: historyData } = useHistory(user?.id ?? 0);
+  const { data: role } = useRole(user?.id ?? 0);
+  const isAdmin = role?.includes("admin") || false;
+  console.log("isAdmin:", isAdmin);
   console.log("Données des préférences :", getPreferences.data);
   console.log("formtrip :", formTrip);
   const preferences = getPreferences.data?.[0] ?? {
@@ -278,6 +284,9 @@ export default function Profile() {
       console.error("Erreur lors de l'enregistrement de l'avis :", error);
     }
   };
+  if (isAdmin) {
+    return <AdminDashboard />;
+  }
   return (
     <div className="bg-[#E8F5E9] min-h-screen font-sans">
       <FeedbackModal
